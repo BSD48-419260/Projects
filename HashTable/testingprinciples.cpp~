@@ -1,0 +1,183 @@
+#include<cmath>
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+
+class Student{
+  //this student only has a name for testing purposes.
+ public:
+  char* Firstname = new char[11];
+  char* Lastname = new char[11];
+  int ID;
+  float GPA;
+  Student(char* newFirstname, char* newLastname, int newID, float newGPA){
+    strncpy(Firstname,newFirstname,10);
+    strncpy(Lastname,newLastname,10);
+    ID = newID;
+    GPA = newGPA;
+  }
+  ~Student(){
+    delete[] Firstname;
+    delete[] Lastname;
+  }
+};
+
+class Node {
+ private: //The node has two things, the link (what it goes to next), and the data
+  Student* data;
+  Node* link;
+ public:
+  Node(Student* argdata){
+    data=argdata;
+    link=nullptr;
+  }
+  ~Node(){
+    delete data;
+    data=nullptr;
+  }
+  Node* getNext(){
+    return link;
+  }
+  Student* getStudent(){
+    return data;
+  }
+  void setNext(Node* arglink){
+    link=arglink;
+  }
+};
+
+int blend(Node* blendy, int cap);
+void rehash(Node**& studarray, int& sizeofarray);
+void add(Node* head, Node* toadd);
+Student* Randomkid();
+void clearDown(Node* head);
+void prepArray(Node **& studarray, int sizeofarray);
+void listStudents(Node* head);
+void readOutArray(Node** studarray, int sizeofarray);
+
+int main(){
+  cout<<"1"<<endl;
+  srand(time(0));
+  cout<<"2"<<endl;
+  int sizeofarray=100;//the size of the array
+  int resizes=0;//resizes. not strictly needed, and could probablt derive it. still, I want to know.
+  Node** studarray = new Node*[sizeofarray];
+  cout<<"3"<<endl;
+  prepArray(studarray,sizeofarray);
+  cout<<"4"<<endl;
+  readOutArray(studarray, sizeofarray);
+  cout<<"5"<<endl;
+  studarray[20] = new Node(new Student("Test","Kid", -1, 0.0f));
+
+  readOutArray(studarray, sizeofarray);
+  
+  prepArray(studarray,sizeofarray);
+  for(int i=0; i<100; i++){
+    studarray[i] = new Node(Randomkid());
+  }
+  readOutArray(studarray, sizeofarray);
+  
+	       
+  return 0;
+}
+
+int blend(Node* blendy, int cap){
+  return 0;
+}
+void rehash(Node**& studarray, int& sizeofarray){
+  Node** nuarray = new Node[sizeofarray*2];
+  preparray(nuarray,sizeofarray);
+  for(int i=0; i<sizeofarray;i++){
+    if(studarray[i]!=nullptr){
+      if(studarray[i]->getStudent()!=nullptr){
+	Student* copykid = new Student(studarray[i]->getStudent()->Firstname,studarray[i]->getStudent()->Lastname,studarray[i]->getStudent()->ID,studarray[i]->getStudent()->GPA);
+	Node* copybox = new Node(copykid);
+	add(nuarray[blend(studarray[i]->getStudent(),sizeofarray*2)],copybox);
+	if(studarray[i]->getNext()!=nullptr){
+	  
+	}
+      }
+      clearDown(studarray[i]);
+    }
+  }
+  sizeofarray*=2;
+}
+
+void add(Node* head, Node* toadd){
+  return 0;
+}
+
+
+
+Student* Randomkid(){
+  int amt=(rand()%5+5);
+  char* fname = new char[11];
+  for(int i=0; i<11;i++){
+    fname[i]='\0';
+  }
+  char* nuchar = new char((rand()%26)+65);
+  strncpy(fname, nuchar,1);
+  for(int i=0; i<amt;i++){
+    delete nuchar;
+    nuchar = new char((rand()%26)+97);
+    strncat(fname, nuchar,1);
+  }
+  
+  amt=(rand()%10);
+  char* lname = new char[11];
+  for(int i=0; i<11;i++){
+    lname[i]='\0';
+  }
+  delete nuchar;
+  nuchar = new char((rand()%26)+65);
+  strncpy(lname, nuchar,1);
+  for(int i=0; i<amt;i++){
+    delete nuchar;
+    nuchar = new char((rand()%26)+97);
+    strncat(lname, nuchar,1);
+  }
+  
+  Student* randokid = new Student(fname,lname,0,(((float)(rand()%400))/100));
+  delete[] fname;
+  delete[] lname;
+  return randokid;
+}
+
+void clearDown(Node* head){
+  if(head==nullptr){
+    return;
+  }
+  if(head->getNext()!=nullptr){
+    clearDown(head->getNext());
+  }
+  delete head;
+  head=nullptr;
+}
+
+void prepArray(Node **& studarray, int sizeofarray){
+  for(int i=0; i<sizeofarray;i++){
+    clearDown(studarray[i]);
+    studarray[i] = new Node(nullptr);
+  }
+}
+
+void listStudents(Node* head){
+  if(head->getStudent()==nullptr){
+    cout<<"There are no students!"<<endl;
+    return;
+  }
+  cout<<"Student Name: "<<head->getStudent()->Firstname<<" "<<head->getStudent()->Lastname<<" ID: "<<head->getStudent()->ID<<" GPA: "<<(round(head->getStudent()->GPA * 100))/100<<endl;
+  if(head->getNext()!=nullptr){
+    listStudents(head->getNext());
+  }
+}
+
+void readOutArray(Node**studarray,int sizeofarray){
+  cout<<"Size of Array: "<<sizeofarray<<endl;
+  for(int i=0; i<sizeofarray; i++){
+    cout<<endl<<"Box Number: "<<i<<endl;
+    cout<<"Contents: "<<endl;
+    listStudents(studarray[i]);
+  }
+}
