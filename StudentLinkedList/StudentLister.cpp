@@ -173,25 +173,20 @@ void linearAdd(Node* current, Node* addme){
     delete current;
     current=new Node(addme->getStudent());
     current->setNext(nullptr);
-      //current->setStudent(addme->getStudent());
     addme =new Node(nullptr);
     delete addme;
-  }else if (current->getStudent()->ID > addme->getStudent()->ID){
-    Node* nextBuffer = current->getNext();
-    Node* newAdd = new Node(current->getStudent());
-    current = new Node(addme->getStudent());
-    current->setNext(newAdd);
-    newAdd->setNext(nextBuffer);
-    addme->setNext(nullptr);
-    delete addme;
+  }else if (head->getStudent()->ID > addme->getStudent()->ID){
+    head = addme;
+    head->setNext(current);
   }else if (current->getNext()==nullptr){
     current->setNext(addme);
   }else if ((current->getStudent()->ID < addme->getStudent()->ID)&&(current->getNext()->getStudent()->ID > addme->getStudent()->ID)){
     addme->setNext(current->getNext());
     current->setNext(addme);
   }else{
-    linearAdd(current->getNext(), addme);
+    linearAdd(head, current->getNext(), addme);
   }
+
 }
 
 //actual lister function. when called, prints all students

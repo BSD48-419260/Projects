@@ -239,7 +239,7 @@ void linearAdd(Node*& head, Node* current, Node* addme){
   }else{
     linearAdd(head, current->getNext(), addme);
   }
-  cout<<"The short man must not get the last word."<<endl;
+  cout<<"The short man must not get the last word"<<endl;
 }
 
 
