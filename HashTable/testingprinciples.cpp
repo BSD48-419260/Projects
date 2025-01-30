@@ -58,6 +58,7 @@ void rehash(Node**& studarray, int& sizeofarray, bool& needreset);
 void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needreset);
 void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needreset);
 void linearAdd(Node*& head, Node* current, Node* addme);
+void AddDownTheList(Node**& studarray,int sizeofarray, int refrenced, bool& needsreset);
 Student* Randomkid(int& ID);
 void clearDown(Node* head);
 void prepArray(Node **& studarray, int sizeofarray);
@@ -80,7 +81,7 @@ int main(){
   
   prepArray(studarray,sizeofarray);
   
-  for(int i=0; i<100; i++){
+  for(int i=0; i<700; i++){
      Student* kiddo = Randomkid(IDiteration);
      blendAddChild(studarray, sizeofarray, kiddo, needsreset);
      if(needsreset){
@@ -91,6 +92,7 @@ int main(){
   readOutArray(studarray, sizeofarray);
   cout<<"1"<<endl;
   while(needsreset){
+    //cout<<"What?"<<endl;
     rehash(studarray, sizeofarray, needsreset);
     resizes++;
     readOutArray(studarray,sizeofarray);
@@ -139,7 +141,7 @@ int blend(Student* blendy, int cap){
   }
   sum=sum*strlen(fullname);
   delete fullname;
-  return abs(((int)(floor(sum))%cap));
+  return ((int)abs((floor(sum)))%cap);
 }
 
 bool NeedRehash(Node* list){
@@ -147,6 +149,7 @@ bool NeedRehash(Node* list){
    if(list->getNext()!=nullptr){
      if(list->getNext()->getNext()!=nullptr){
        if(list->getNext()->getNext()->getNext()!=nullptr){
+	 cout<<"HELLO! WHAT THE HECK IS THIS!?"<<endl;
 	 return true;
        }
      }
@@ -157,7 +160,7 @@ bool NeedRehash(Node* list){
 
 void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   Node** nuarray = new Node*[sizeofarray*2];
-  //needsreset=false;
+  needsreset=false;
   prepArray(nuarray,sizeofarray*2);
   for(int i=0; i<sizeofarray;i++){
     if(studarray[i]!=nullptr){
@@ -244,6 +247,10 @@ void linearAdd(Node*& head, Node* current, Node* addme){
   }else{
     linearAdd(head, current->getNext(), addme);
   }
+}
+
+void AddDownTheList(Node**& studarray,int sizeofarray, int refrenced, bool& needsreset){
+
 }
 
 Student* Randomkid(int& ID){
