@@ -53,9 +53,10 @@ class Node {
 
 void getStringFromInput(char* inpstring);
 int blend(Student* blendy, int cap);
-void rehash(Node**& studarray, int& sizeofarray);
-void addStudent(Node**& studarray, int sizeofarray, int newID);
-void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid);
+bool NeedRehash(Node* list);
+void rehash(Node**& studarray, int& sizeofarray, bool& needreset);
+void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needreset);
+void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needreset);
 void linearAdd(Node*& head, Node* current, Node* addme);
 Student* Randomkid(int& ID);
 void clearDown(Node* head);
@@ -69,6 +70,7 @@ int main(){
   int sizeofarray=100;//the size of the array
   int resizes=0;//resizes. not strictly needed, and could probablt derive it. still, I want to know.
   int IDiteration=1;
+  bool needsreset=false;
   Node** studarray = new Node*[sizeofarray];
   prepArray(studarray,sizeofarray);
   readOutArray(studarray, sizeofarray);
@@ -77,14 +79,24 @@ int main(){
   readOutArray(studarray, sizeofarray);
   
   prepArray(studarray,sizeofarray);
+  
   for(int i=0; i<100; i++){
-    studarray[i] = new Node(Randomkid(IDiteration));
+     Student* kiddo = Randomkid(IDiteration);
+     blendAddChild(studarray, sizeofarray, kiddo, needsreset);
+     if(needsreset){
+       cout<<"I see it."<<endl;
+     }
+     delete kiddo;
   }
   readOutArray(studarray, sizeofarray);
   cout<<"1"<<endl;
-  rehash(studarray, sizeofarray);
+  while(needsreset){
+    rehash(studarray, sizeofarray, needsreset);
+    resizes++;
+    readOutArray(studarray,sizeofarray);
+  }
   cout<<"-1"<<endl;
-  readOutArray(studarray,sizeofarray);
+  cout<<resizes<<endl;
 	       
   return 0;
 }
@@ -115,66 +127,58 @@ void getStringFromInput(char* inpstring){
 }
 
 int blend(Student* blendy, int cap){
-  cout<<"Lion"<<endl;
   char* fullname = new char[22];
-  cout<<"Fulcrum"<<endl;
   for(int i=0; i<22; i++){
     fullname[i]='\0';
   }
-  cout<<"Peter"<<endl;
   strncpy(fullname,blendy->Firstname,strlen(blendy->Firstname));
-  cout<<"Door"<<endl;
   strcat(fullname,blendy->Lastname);
-  cout<<"Lemons"<<endl;
   double sum=0;
-  cout<<"Curse"<<endl;
   for(int i=0; i<strlen(fullname); i++){
-    sum+=cos(floor(fullname[i]*i))*fullname[i];
+    sum+=cos(floor(fullname[i]*i))*pow(fullname[i],(i%3)+1);
   }
-  cout<<"Sanctum"<<endl;
+  sum=sum*strlen(fullname);
   delete fullname;
-  cout<<"Ferris"<<endl;
-  return ((int)(floor(sum))%cap);
+  return abs(((int)(floor(sum))%cap));
 }
-void rehash(Node**& studarray, int& sizeofarray){
-  cout<<"A"<<endl;
+
+bool NeedRehash(Node* list){
+ if(list!=nullptr){
+   if(list->getNext()!=nullptr){
+     if(list->getNext()->getNext()!=nullptr){
+       if(list->getNext()->getNext()->getNext()!=nullptr){
+	 return true;
+       }
+     }
+   }
+ }
+ return false;
+}
+
+void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   Node** nuarray = new Node*[sizeofarray*2];
-  cout<<"B"<<endl;
+  //needsreset=false;
   prepArray(nuarray,sizeofarray*2);
-  cout<<"C"<<endl;
   for(int i=0; i<sizeofarray;i++){
     if(studarray[i]!=nullptr){
-      cout<<"Alpha"<<endl;
       if(studarray[i]->getStudent()!=nullptr){
-	cout<<"Bravo"<<endl;
-	blendAddChild(nuarray, sizeofarray*2, studarray[i]->getStudent());
-	cout<<"Charlie"<<endl;
+	blendAddChild(nuarray, sizeofarray*2, studarray[i]->getStudent(),needsreset);
 	if(studarray[i]->getNext()!=nullptr){
-	  cout<<"Delta"<<endl;
-	  blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getStudent());
-	  cout<<"Echo"<<endl;
+	  blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getStudent(),needsreset);
 	  if(studarray[i]->getNext()->getNext()!=nullptr){
-	    cout<<"Foxtrot"<<endl;
-	    blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getNext()->getStudent());
-	    cout<<"Golf"<<endl;
+	    blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getNext()->getStudent(),needsreset);
 	  }
 	}
       }
-      cout<<"Hotel"<<endl;
       clearDown(studarray[i]);
-      cout<<"India"<<endl;
     }
   }
-  cout<<"D"<<endl;
   delete[] studarray;
-  cout<<"E"<<endl;
   studarray = nuarray;
-  cout<<"F"<<endl;
   sizeofarray=sizeofarray*2;
-  cout<<"G"<<endl;
 }
 
-void addStudent(Node**& studarray, int sizeofarray, int newID){
+void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needsreset){
   Student* newkid = new Student();
   bool acin=false;
   //name getting
@@ -205,27 +209,28 @@ void addStudent(Node**& studarray, int sizeofarray, int newID){
   }
   acin=false;
   newkid->GPA=newGPA;
-  blendAddChild(studarray, sizeofarray, newkid);
+  blendAddChild(studarray, sizeofarray, newkid, needsreset);
   delete newkid;
   return;
 }
 
-void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid){
-  cout<<"Fear"<<endl;
+void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needsreset){
   Student* copykid = new Student(kid->Firstname,kid->Lastname,kid->ID,kid->GPA);
-  cout<<"Anger"<<endl;
+  copykid->Firstname[10]='\0';
   Node* copybox = new Node(copykid);
-  cout<<"Hate"<<endl;
+  copykid->Lastname[10]='\0';
   linearAdd(putchildin[blend(kid,sizeofarray)],putchildin[blend(kid,sizeofarray)], copybox);
-  cout<<"Suffering"<<endl;
+  if(needsreset==false){
+    needsreset = NeedRehash(putchildin[blend(kid,sizeofarray)]);
+  }
 }
- 
+
 void linearAdd(Node*& head, Node* current, Node* addme){
-  cout<<"You're trying to kidnap what I've rightfully stolen!"<<endl;
   if (current->getStudent()==nullptr){
     delete current;
     current=new Node(addme->getStudent());
     current->setNext(nullptr);
+      //current->setStudent(addme->getStudent());
     addme =new Node(nullptr);
     delete addme;
   }else if (head->getStudent()->ID > addme->getStudent()->ID){
@@ -239,9 +244,7 @@ void linearAdd(Node*& head, Node* current, Node* addme){
   }else{
     linearAdd(head, current->getNext(), addme);
   }
-  cout<<"The short man must not get the last word"<<endl;
 }
-
 
 Student* Randomkid(int& ID){
   int amt=(rand()%7+3);
