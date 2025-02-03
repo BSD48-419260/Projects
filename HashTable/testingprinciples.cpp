@@ -4,6 +4,7 @@
 #include<cmath>
 using namespace std;
 
+
 class Student{
   //this student only has a name for testing purposes.
  public:
@@ -84,7 +85,7 @@ int main(){
   
   readOutArray(studarray, sizeofarray);
   
-  for(int i=0; i<400; i++){
+  for(int i=0; i<300; i++){
      Student* kiddo = Randomkid(IDiteration);
      blendAddChild(studarray, sizeofarray, kiddo, needsreset);
      if(needsreset){
@@ -140,13 +141,14 @@ int blend(Student* blendy, int cap){
   }
   strncpy(fullname,blendy->Firstname,strlen(blendy->Firstname));
   strcat(fullname,blendy->Lastname);
-  double sum=0;
+
+  unsigned long sum=0;
   for(int i=0; i<strlen(fullname); i++){
-    sum+=cos(floor(fullname[i]*i))*pow(fullname[i],(i%3)+1);
+    sum=(i*sum*7489)+fullname[i];
   }
-  sum=sum*strlen(fullname);
+
   delete fullname;
-  return ((int)abs((floor(sum)))%cap);
+  return ((sum)%cap);
 }
 
 bool NeedRehash(Node* list){
@@ -164,24 +166,17 @@ bool NeedRehash(Node* list){
 }
 
 void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
-  cout<<"Am"<<endl;
   Node** nuarray = new Node*[sizeofarray*2];
-  cout<<"I"<<endl;
   needsreset=false;
-  cout<<"Having"<<endl;
   prepArray(nuarray,sizeofarray*2);
-  cout<<"a"<<endl;
   for(int i=0; i<sizeofarray;i++){
-    cout<<"midlife"<<endl;
     if(studarray[i]!=nullptr){
       if(studarray[i]->getStudent()!=nullptr){
-	cout<<"Crisis?"<<endl;
 	AddDownTheList(nuarray,sizeofarray*2,studarray[i],needsreset);
       }
       clearDown(studarray[i]);
     }
   }
-  cout<<"...What?"<<endl;
   delete[] studarray;
   studarray = nuarray;
   sizeofarray=sizeofarray*2;
