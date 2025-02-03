@@ -4,7 +4,6 @@
 #include<cmath>
 using namespace std;
 
-
 class Student{
   //this student only has a name for testing purposes.
  public:
@@ -39,6 +38,7 @@ class Node {
   ~Node(){
     delete data;
     data=nullptr;
+    link=nullptr;
   }
   Node* getNext(){
     return link;
@@ -58,7 +58,7 @@ void rehash(Node**& studarray, int& sizeofarray, bool& needreset);
 void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needreset);
 void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needreset);
 void linearAdd(Node*& head, Node* current, Node* addme);
-void AddDownTheList(Node**& studarray,int sizeofarray, int refrenced, bool& needsreset);
+void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& needsreset);
 Student* Randomkid(int& ID);
 void clearDown(Node* head);
 void prepArray(Node **& studarray, int sizeofarray);
@@ -75,13 +75,16 @@ int main(){
   Node** studarray = new Node*[sizeofarray];
   prepArray(studarray,sizeofarray);
   readOutArray(studarray, sizeofarray);
-  studarray[20] = new Node(new Student("Test","Kid", -1, 0.0f));
-
+  /*
+  studarray[0] = new Node(new Student("Test","Kid", -1, 0.0f));
+  studarray[0]->setNext(new Node(new Student("Test","Kid2", -2, 0.0f)));
+  studarray[0]->getNext()->setNext(new Node(new Student("Test","Kid3", -3, 0.0f)));
+  studarray[0]->getNext()->getNext()->setNext(new Node(new Student("Test","Kid4", -4, 0.0f)));
+  */
+  
   readOutArray(studarray, sizeofarray);
   
-  prepArray(studarray,sizeofarray);
-  
-  for(int i=0; i<700; i++){
+  for(int i=0; i<400; i++){
      Student* kiddo = Randomkid(IDiteration);
      blendAddChild(studarray, sizeofarray, kiddo, needsreset);
      if(needsreset){
@@ -89,10 +92,12 @@ int main(){
      }
      delete kiddo;
   }
+  
   readOutArray(studarray, sizeofarray);
   cout<<"1"<<endl;
+  needsreset=true;
   while(needsreset){
-    //cout<<"What?"<<endl;
+    cout<<"What?"<<endl;
     rehash(studarray, sizeofarray, needsreset);
     resizes++;
     readOutArray(studarray,sizeofarray);
@@ -159,23 +164,24 @@ bool NeedRehash(Node* list){
 }
 
 void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
+  cout<<"Am"<<endl;
   Node** nuarray = new Node*[sizeofarray*2];
+  cout<<"I"<<endl;
   needsreset=false;
+  cout<<"Having"<<endl;
   prepArray(nuarray,sizeofarray*2);
+  cout<<"a"<<endl;
   for(int i=0; i<sizeofarray;i++){
+    cout<<"midlife"<<endl;
     if(studarray[i]!=nullptr){
       if(studarray[i]->getStudent()!=nullptr){
-	blendAddChild(nuarray, sizeofarray*2, studarray[i]->getStudent(),needsreset);
-	if(studarray[i]->getNext()!=nullptr){
-	  blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getStudent(),needsreset);
-	  if(studarray[i]->getNext()->getNext()!=nullptr){
-	    blendAddChild(nuarray, sizeofarray*2, studarray[i]->getNext()->getNext()->getStudent(),needsreset);
-	  }
-	}
+	cout<<"Crisis?"<<endl;
+	AddDownTheList(nuarray,sizeofarray*2,studarray[i],needsreset);
       }
       clearDown(studarray[i]);
     }
   }
+  cout<<"...What?"<<endl;
   delete[] studarray;
   studarray = nuarray;
   sizeofarray=sizeofarray*2;
@@ -249,8 +255,16 @@ void linearAdd(Node*& head, Node* current, Node* addme){
   }
 }
 
-void AddDownTheList(Node**& studarray,int sizeofarray, int refrenced, bool& needsreset){
-
+void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& needsreset){
+  if(current!=nullptr){
+    if (current->getStudent()!=nullptr){
+      blendAddChild(studarray,sizeofarray,current->getStudent(),needsreset);
+      //delete current->getStudent();
+    }
+  }
+  if(current->getNext()!=nullptr){
+    AddDownTheList(studarray,sizeofarray,current->getNext(),needsreset);
+  }
 }
 
 Student* Randomkid(int& ID){
@@ -299,7 +313,6 @@ void clearDown(Node* head){
 
 void prepArray(Node **& studarray, int sizeofarray){
   for(int i=0; i<sizeofarray;i++){
-    clearDown(studarray[i]);
     studarray[i] = new Node(nullptr);
   }
 }
