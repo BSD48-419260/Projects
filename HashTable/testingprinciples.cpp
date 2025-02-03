@@ -56,11 +56,13 @@ void getStringFromInput(char* inpstring);
 int blend(Student* blendy, int cap);
 bool NeedRehash(Node* list);
 void rehash(Node**& studarray, int& sizeofarray, bool& needreset);
-void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needreset);
+void addStudent(Node**& studarray, int sizeofarray, int& newID, bool& needreset);
 void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needreset);
 void linearAdd(Node*& head, Node* current, Node* addme);
 void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& needsreset);
 Student* Randomkid(int& ID);
+void addRandomKids(int howmany, int& ID, Node**&studarray, int sizeofarray, bool& needsreset);
+void addRandomPreamble(int& ID, Node**&studarray, int sizeofarray, bool& needsreset);
 void clearDown(Node* head);
 void prepArray(Node **& studarray, int sizeofarray);
 void listStudents(Node* head);
@@ -75,37 +77,50 @@ int main(){
   bool needsreset=false;
   Node** studarray = new Node*[sizeofarray];
   prepArray(studarray,sizeofarray);
-  readOutArray(studarray, sizeofarray);
-  /*
-  studarray[0] = new Node(new Student("Test","Kid", -1, 0.0f));
-  studarray[0]->setNext(new Node(new Student("Test","Kid2", -2, 0.0f)));
-  studarray[0]->getNext()->setNext(new Node(new Student("Test","Kid3", -3, 0.0f)));
-  studarray[0]->getNext()->getNext()->setNext(new Node(new Student("Test","Kid4", -4, 0.0f)));
-  */
-  
-  readOutArray(studarray, sizeofarray);
-  
-  for(int i=0; i<300; i++){
-     Student* kiddo = Randomkid(IDiteration);
-     blendAddChild(studarray, sizeofarray, kiddo, needsreset);
-     if(needsreset){
-       cout<<"I see it."<<endl;
-     }
-     delete kiddo;
+  cout<<"==========================="<<endl;
+  cout<<"Welcome to:"<<endl;
+  cout<<"  _____         _____           _____ _____       __  __      ________ "<<endl;
+  cout<<" / ___ \        \   /           \   / \   /      /  \/  \     \  ____/ "<<endl;
+  cout<<" | | /__\        | |             | |   | |      / /\__/\ \     | |     "<<endl;
+  cout<<" | |___          | |             | |___| |      | |    | |     | |_/|  "<<endl;
+  cout<<" \____ \         | |             | _____ |      | |    | |     |  _ |  "<<endl;
+  cout<<"____ | |         | |             | |   | |      | |    | |     | | \|  "<<endl;
+  cout<<"\  /_| |         | |___          | |   | |      | |    | |     | |___  "<<endl;
+  cout<<" \_____/ tudent /______\ ister, /___\ /___\ ash/___\  /___\ap /______\ dition."<<endl;
+   bool notQuit=true;
+  cout<<"(Please note this program is incapable of saving data, so don't actually use it for managing students)"<<endl;
+  char inpstring[10];
+  while(notQuit){
+    //trying to be robust. Also, Command handler.
+    cout<<"Please input a command. (Valid commands: ADD, ADDRANDOM, DELETE, PRINT, QUIT)"<<endl;
+    for(int i=0; i<10; i++){
+      inpstring[i]='\0';
+    }
+    cin >> inpstring;
+    if(cin.fail()){
+      cout<<"Something went wrong. Please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else if (strcmp(inpstring,"ADD")==0){
+      addStudent(studarray, sizeofarray, IDiteration, needsreset);
+    }else if (strcmp(inpstring,"ADDRANDOM")==0){
+      addRandomPreamble(IDiteration,studarray,sizeofarray,needsreset);
+    }else if (strcmp(inpstring,"DELETE")==0){
+      //killStudent(head);
+    }else if (strcmp(inpstring,"PRINT")==0){
+      ReadOutArray(studarray,sizeofarray);
+    }else if (strcmp(inpstring,"QUIT")==0){
+      notQuit=false;
+      //no command needed, just quit the loop.
+    }else{
+      cout<<"Invalid Command."<<endl;
+    }
+    if(needsreset){
+      rehash(studarray,sizeofarray,needsreset);
+      resizes++;
+    }
   }
-  
-  readOutArray(studarray, sizeofarray);
-  cout<<"1"<<endl;
-  needsreset=true;
-  while(needsreset){
-    cout<<"What?"<<endl;
-    rehash(studarray, sizeofarray, needsreset);
-    resizes++;
-    readOutArray(studarray,sizeofarray);
-  }
-  cout<<"-1"<<endl;
-  cout<<resizes<<endl;
-	       
+  cout<<"Have a nice day."<<endl;
   return 0;
 }
 
@@ -182,7 +197,7 @@ void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   sizeofarray=sizeofarray*2;
 }
 
-void addStudent(Node**& studarray, int sizeofarray, int newID, bool& needsreset){
+void addStudent(Node**& studarray, int sizeofarray, int& newID, bool& needsreset){
   Student* newkid = new Student();
   bool acin=false;
   //name getting
@@ -293,6 +308,31 @@ Student* Randomkid(int& ID){
   delete[] fname;
   delete[] lname;
   return randokid;
+}
+
+void addRandomKids(int howmany, int& ID, Node**&studarray, int sizeofarray, bool& needsreset){
+  for(int i=0; i<howmany; i++){
+     Student* kiddo = Randomkid(ID);
+     blendAddChild(studarray, sizeofarray, kiddo, needsreset);
+     delete kiddo;
+  }
+}
+
+void addRandomPreamble(int& ID, Node**&studarray, int sizeofarray, bool& needsreset){
+  bool acin=false;
+  int numbtoad;
+  while (acin==false){
+    cout<<"Please give me a number of students."<<endl;
+    cin>>ID;
+    if(cin.fail()){
+      cout<<"ERROR! please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      acin=true;
+    }
+  }
+  
 }
 
 void clearDown(Node* head){
