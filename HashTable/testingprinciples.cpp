@@ -1,10 +1,22 @@
-#include<cmath>
-#include<iostream>
-#include<cstring>
-#include<cmath>
+/*
+  2/5/2025
+  Elliott VanOrman's HashTable program.
+  Created for Jason Galbraith's C++/Data structures class.
+  this project is intended to both demonstrate and grow my ability to use hash functions and hash tables.
+ */
+#include <cmath>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+#include <fstream>
+#include <string>
+#include "Student.cpp"
+#include "Node.cpp"
 using namespace std;
 
-
+/* this is the code for the Student class and the Node class. it is kept here for two purposes:
+   1:Because I originally included it in this file so I wouldn't have to emacs in and out of multiple files to change things.
+   2:because it helps to have this where I can see it and use it to check what each function does exactly
 class Student{
   //this student only has a name for testing purposes.
  public:
@@ -40,7 +52,6 @@ class Node {
   }
   ~Node(){
     delete data;
-    data=nullptr;
     link=nullptr;
   }
   Node* getNext(){
@@ -53,7 +64,9 @@ class Node {
     link=arglink;
   }
 };
+*/
 
+//function signatures
 void getStringFromInput(char* inpstring);
 int blend(Student* blendy, int cap);
 bool NeedRehash(Node* list);
@@ -73,7 +86,9 @@ void getStringFromInput(char* inpstring);
 void killStudentPreamble(Node**& studarray, int sizeofarray);
 void killStudent(Node* current, int ID);
 
+//main function
 int main(){
+  //setup and intro scrawl
   srand(time(0));
   int sizeofarray=100;//the size of the array
   int resizes=0;//resizes. not strictly needed, and could probablt derive it. still, I want to know.
@@ -91,43 +106,53 @@ int main(){
   cout<<"____ | |         | |             | |   | |      | |    | |     | | \\|  "<<endl;
   cout<<"\\  /_| |         | |___          | |   | |      | |    | |     | |___  "<<endl;
   cout<<" \\_____/ tudent /______\\ ister, /___\\ /___\\ ash/___\\  /___\\ap /______\\ dition."<<endl;
-   bool notQuit=true;
+  bool notQuit=true;
   cout<<"(Please note this program is incapable of saving data, so don't actually use it for managing students)"<<endl;
   char inpstring[10];
+  //primary loop
   while(notQuit){
-    //trying to be robust. Also, Command handler.
-    cout<<"Please input a command. (Valid commands: ADD, ADDRANDOM, DELETE, PRINT, QUIT)"<<endl;
-    for(int i=0; i<10; i++){
-      inpstring[i]='\0';
-    }
-    cin >> inpstring;
-    if(cin.fail()){
+    try{
+      //trying to be robust. Also, Command handler.
+      cout<<"Please input a command. (Valid commands: ADD, ADDRANDOM, DELETE, PRINT, QUIT)"<<endl;
+      for(int i=0; i<10; i++){
+	inpstring[i]='\0';
+      }
+      cin >> inpstring;
+      if(cin.fail()){
+	cout<<"Something went wrong. Please try again."<<endl;
+	cin.clear();
+	cin.ignore(100000,'\n');
+      }else if (strcmp(inpstring,"ADD")==0){
+	addStudent(studarray, sizeofarray, IDiteration, needsreset);
+      }else if (strcmp(inpstring,"ADDRANDOM")==0){
+	addRandomPreamble(IDiteration,studarray,sizeofarray,needsreset);
+      }else if (strcmp(inpstring,"DELETE")==0){
+	killStudentPreamble(studarray,sizeofarray);
+      }else if (strcmp(inpstring,"PRINT")==0){
+	readOutArray(studarray,sizeofarray);
+      }else if (strcmp(inpstring,"QUIT")==0){
+	notQuit=false;
+	//no command needed, just quit the loop.
+      }else{
+	cout<<"Invalid Command."<<endl;
+      }
+      while(needsreset){
+	rehash(studarray,sizeofarray,needsreset);
+	resizes++;
+      }
+    }catch(...){
+      //sometimes accidentally pressing the arrow keys can throw the input system for a loop, so I put this here to correct the error
+      //(That was an idiom. Despite how much it sounds like technobabble, the pun was fully unintended)
       cout<<"Something went wrong. Please try again."<<endl;
       cin.clear();
       cin.ignore(100000,'\n');
-    }else if (strcmp(inpstring,"ADD")==0){
-      addStudent(studarray, sizeofarray, IDiteration, needsreset);
-    }else if (strcmp(inpstring,"ADDRANDOM")==0){
-      addRandomPreamble(IDiteration,studarray,sizeofarray,needsreset);
-    }else if (strcmp(inpstring,"DELETE")==0){
-      killStudentPreamble(studarray,sizeofarray);
-    }else if (strcmp(inpstring,"PRINT")==0){
-      readOutArray(studarray,sizeofarray);
-    }else if (strcmp(inpstring,"QUIT")==0){
-      notQuit=false;
-      //no command needed, just quit the loop.
-    }else{
-      cout<<"Invalid Command."<<endl;
-    }
-    while(needsreset){
-      rehash(studarray,sizeofarray,needsreset);
-      resizes++;
     }
   }
   cout<<"Have a nice day."<<endl;
   return 0;
 }
 
+//string getter
 void getStringFromInput(char* inpstring){
   char bufferarray [11];
   //make sure it works
@@ -153,6 +178,7 @@ void getStringFromInput(char* inpstring){
   return;
 }
 
+//actual hash function
 int blend(Student* blendy, int cap){
   char* fullname = new char[22];
   for(int i=0; i<22; i++){
@@ -169,12 +195,12 @@ int blend(Student* blendy, int cap){
   return ((sum)%cap);
 }
 
+//function to check if rehashing of array is required.
 bool NeedRehash(Node* list){
  if(list!=nullptr){
    if(list->getNext()!=nullptr){
      if(list->getNext()->getNext()!=nullptr){
        if(list->getNext()->getNext()->getNext()!=nullptr){
-	 cout<<"HELLO! WHAT THE HECK IS THIS!?"<<endl;
 	 return true;
        }
      }
@@ -183,6 +209,7 @@ bool NeedRehash(Node* list){
  return false;
 }
 
+//function doubles the size of the array and rehashes it's contents.
 void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   Node** nuarray = new Node*[sizeofarray*2];
   needsreset=false;
@@ -200,6 +227,7 @@ void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   sizeofarray=sizeofarray*2;
 }
 
+//function manually adds students
 void addStudent(Node**& studarray, int sizeofarray, int& newID, bool& needsreset){
   Student* newkid = new Student();
   bool acin=false;
@@ -237,29 +265,18 @@ void addStudent(Node**& studarray, int sizeofarray, int& newID, bool& needsreset
 }
 
 void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needsreset){
-  cout<<"Hi"<<endl;
   Student* copykid = new Student(kid->Firstname,kid->Lastname,kid->ID,kid->GPA);
   copykid->Firstname[10]='\0';
-  cout<<"there"<<endl;
   Node* copybox = new Node(copykid);
   copykid->Lastname[10]='\0';
-  cout<<"buddy"<<endl;
-  cout<<sizeofarray<<endl;
-  cout<<kid<<endl;
-  cout<<blend(kid,sizeofarray)<<endl;
-  cout<<putchildin[blend(kid,sizeofarray)]<<endl;
   linearAdd(putchildin[blend(kid,sizeofarray)],putchildin[blend(kid,sizeofarray)], copybox);
-  cout<<"chum"<<endl;
   if(needsreset==false){
     needsreset = NeedRehash(putchildin[blend(kid,sizeofarray)]);
   }
-  cout<<"pal"<<endl;
 }
 
 void linearAdd(Node*& head, Node* current, Node* addme){
-  cout<<"My favorite food is"<<endl;
   if (current->getStudent()==nullptr){
-    cout<<"Salt"<<endl;
     delete current;
     current=new Node(addme->getStudent());
     current->setNext(nullptr);
@@ -267,18 +284,14 @@ void linearAdd(Node*& head, Node* current, Node* addme){
     addme =new Node(nullptr);
     delete addme;
   }else if (head->getStudent()->ID > addme->getStudent()->ID){
-    cout<<"Sodium"<<endl;
     head = addme;
     head->setNext(current);
   }else if (current->getNext()==nullptr){
-    cout<<"Stibnite"<<endl;
     current->setNext(addme);
   }else if ((current->getStudent()->ID < addme->getStudent()->ID)&&(current->getNext()->getStudent()->ID > addme->getStudent()->ID)){
-    cout<<"Sauteed Beef"<<endl;
     addme->setNext(current->getNext());
     current->setNext(addme);
   }else{
-    cout<<"The concept of Steel"<<endl;
     linearAdd(head, current->getNext(), addme);
   }
 }
@@ -295,6 +308,7 @@ void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& need
   }
 }
 
+/*
 Student* Randomkid(int& ID){
   int amt=(rand()%7+3);
   char* fname = new char[11];
@@ -318,6 +332,52 @@ Student* Randomkid(int& ID){
     nuchar = (rand()%26)+97;
     strncat(lname, &nuchar,1);
   }
+  Student* randokid = new Student(fname,lname,ID++,(((float)(rand()%400))/100));
+  delete[] fname;
+  delete[] lname;
+  return randokid;
+}
+*/
+
+Student* Randomkid(int& ID){
+  char* fname = new char[21];
+  char* lname = new char[21];
+  ifstream myfile;
+  myfile.open("Firstnames.txt");
+  int numlines;
+  int randomlin;
+  bool found;
+  if(myfile.is_open()){
+    numlines=0;
+    randomlin = (rand()%200);
+    found=false;
+    while((found==false)&&(myfile>>fname)){
+      ++numlines;
+      if(numlines==randomlin){
+	found=true;
+      }
+    }
+  }else{
+    cout<<"ERROR! NO VALID Firstnames.txt FILE!"<<endl;
+    exit(1);
+  }
+  myfile.close();
+  myfile.open("Lastnames.txt");
+  if(myfile.is_open()){
+    numlines=0;
+    randomlin = (rand()%200);
+    found=false;
+    while((found==false)&&(myfile>>lname)){
+      ++numlines;
+      if(numlines==randomlin){
+	found=true;
+      }
+    }
+  }else{
+    cout<<"ERROR! NO VALID Lastnames.txt FILE!"<<endl;
+    exit(1);
+  }
+  myfile.close();
   Student* randokid = new Student(fname,lname,ID++,(((float)(rand()%400))/100));
   delete[] fname;
   delete[] lname;
