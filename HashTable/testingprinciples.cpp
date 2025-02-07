@@ -108,11 +108,12 @@ int main(){
   cout<<" \\_____/ tudent /______\\ ister, /___\\ /___\\ ash/___\\  /___\\ap /______\\ dition."<<endl;
   bool notQuit=true;
   cout<<"(Please note this program is incapable of saving data, so don't actually use it for managing students)"<<endl;
+  cout<<"(One more thing, please do not at any point press the arrow keys while performing input. it corrupts the memory of the program.)"<<endl;
   char inpstring[10];
   //primary loop
   while(notQuit){
     try{
-      //trying to be robust. Also, Command handler.
+      //robust command handler.
       cout<<"Please input a command. (Valid commands: ADD, ADDRANDOM, DELETE, PRINT, QUIT)"<<endl;
       for(int i=0; i<10; i++){
 	inpstring[i]='\0';
@@ -217,8 +218,10 @@ void rehash(Node**& studarray, int& sizeofarray, bool& needsreset){
   for(int i=0; i<sizeofarray;i++){
     if(studarray[i]!=nullptr){
       if(studarray[i]->getStudent()!=nullptr){
+	//puts all students in the list down nuarray
 	AddDownTheList(nuarray,sizeofarray*2,studarray[i],needsreset);
       }
+      //wipes the array
       clearDown(studarray[i]);
     }
   }
@@ -264,6 +267,7 @@ void addStudent(Node**& studarray, int sizeofarray, int& newID, bool& needsreset
   return;
 }
 
+//function takes child and adds them to their box in the Hash Table
 void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& needsreset){
   Student* copykid = new Student(kid->Firstname,kid->Lastname,kid->ID,kid->GPA);
   copykid->Firstname[10]='\0';
@@ -275,6 +279,7 @@ void blendAddChild(Node**& putchildin, int sizeofarray, Student* kid, bool& need
   }
 }
 
+//function adds child to linkedlist at each adress
 void linearAdd(Node*& head, Node* current, Node* addme){
   if (current->getStudent()==nullptr){
     delete current;
@@ -296,6 +301,7 @@ void linearAdd(Node*& head, Node* current, Node* addme){
   }
 }
 
+//function goes down the linkedlist whose head is at current and adds it's contents to studarray
 void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& needsreset){
   if(current!=nullptr){
     if (current->getStudent()!=nullptr){
@@ -308,6 +314,7 @@ void AddDownTheList(Node**& studarray,int sizeofarray, Node* current, bool& need
   }
 }
 
+//old random student generation script. Generates names using random characters
 /*
 Student* Randomkid(int& ID){
   int amt=(rand()%7+3);
@@ -338,7 +345,7 @@ Student* Randomkid(int& ID){
   return randokid;
 }
 */
-
+//current random student generation script. generates students by taking random firstnames and lastnames from two .txt files
 Student* Randomkid(int& ID){
   char* fname = new char[21];
   char* lname = new char[21];
@@ -384,6 +391,7 @@ Student* Randomkid(int& ID){
   return randokid;
 }
 
+//function that adds a number of random students to studarray.
 void addRandomKids(int howmany, int& ID, Node**&studarray, int sizeofarray, bool& needsreset){
   for(int i=0; i<howmany; i++){
      Student* kiddo = Randomkid(ID);
@@ -392,6 +400,7 @@ void addRandomKids(int howmany, int& ID, Node**&studarray, int sizeofarray, bool
   }
 }
 
+//function asks the user for a random number of students, then blends that many into the array
 void addRandomPreamble(int& ID, Node**&studarray, int sizeofarray, bool& needsreset){
   bool acin=false;
   int numbtoadd;
@@ -411,6 +420,7 @@ void addRandomPreamble(int& ID, Node**&studarray, int sizeofarray, bool& needsre
   cout<<"Complete! Added "<<numbtoadd<<" Students."<<endl;
 }
 
+//wipes the entire contents of a linkedlist.
 void clearDown(Node* head){
   if(head==nullptr){
     return;
@@ -422,12 +432,14 @@ void clearDown(Node* head){
   head=nullptr;
 }
 
+//prepares studdarray by making a node in each spot.
 void prepArray(Node **& studarray, int sizeofarray){
   for(int i=0; i<sizeofarray;i++){
     studarray[i] = new Node(nullptr);
   }
 }
 
+//prints out the contents of a linkedlist
 void listStudents(Node* head){
   if(head->getStudent()==nullptr){
     cout<<"There are no students!"<<endl;
@@ -439,6 +451,7 @@ void listStudents(Node* head){
   }
 }
 
+//prints out the contents of a hashtable where each box contains a linkedlist
 void readOutArray(Node**studarray,int sizeofarray){
   cout<<"Size of Array: "<<sizeofarray<<endl;
   for(int i=0; i<sizeofarray; i++){
