@@ -1,0 +1,167 @@
+#include <iostream>
+#include <cmath>
+#include <fstream>
+using namespace std;
+
+int parentIndex(int index);
+int leftIndex(int index);
+int rightIndex(int index);
+int earliestOpenIndex(int* heapofints, int sizeofarray);
+void addNode(int*& heapofints, int sizeofarray, int toadd);
+void deleteNode(int*& heapofints, int sizeofarray, int index);
+void bubbleTo(int*& heapofints, int index);
+void swap(int& one, int& two);
+void printStraight(int* heapofints,int addon,int sizeofarray,bool shownum);
+void printEasy(int* heapofints, int sizeofarray);
+
+int main(){
+  //oh boy
+  int* heapofints = new int[127];
+  int sizeofarray=127;
+  for(int i=0; i<sizeofarray; i++){
+    heapofints[i]=-1;
+  }
+  for(int i=0; i<127; i++){
+    printStraight(heapofints,0,sizeofarray,true);
+    addNode(heapofints,sizeofarray,i+1);
+  }
+  printStraight(heapofints,0,sizeofarray,true);
+  return 0;
+}
+
+int parentIndex(int index){
+  return floor((index-1)/2);
+}
+
+int leftIndex(int index){
+  return (index*2)+1;
+}
+
+int rightIndex(int index){
+  return (index+1)*2;
+}
+
+int earliestOpenIndex(int* heapofints, int sizeofarray){
+  for(int i=0; i<sizeofarray; i++){
+    if(heapofints[i]==-1){
+      return i;
+    }
+  }
+  return -1;
+}
+
+void addNode(int*& heapofints, int sizeofarray, int toadd){
+  int addindex = earliestOpenIndex(heapofints,sizeofarray);
+  if(addindex==-1){
+    cout<<"ERROR! HEAP FULL!"<<endl;
+    return;
+  }
+  cout<<"adding "<<toadd<<" at "<<addindex<<endl;
+  heapofints[addindex] = toadd;
+  bubbleTo(heapofints, addindex);
+  return;
+}
+
+void deleteNode(int*& heapofints, int sizeofarray, int index){
+  cout<<"moving "<<heapofints[index]<<"down at "<<index<<endl;
+  if((rightIndex(index)>=sizeofarray)||(leftIndex(index)>=sizeofarray)){
+    cout<<heapofints[index]<<"reached bottom of tree at "<<index<<". Deleting.."<<endl;
+    heapofints[index]=-1;
+  }else if(heapofints[rightIndex(index)]>heapofints[leftIndex(index)]){
+    cout<<heapofints[rightIndex(index)]<<" at "<<rightIndex(index)<<" bigger than "<<heapofints[leftIndex(index)]<<" at "<<leftIndex(index)<<". Swapping it with"<<heapofints[index]<<" at "<<index<<endl;
+    swap(heapofints[rightIndex(index)],heapofints[index]);
+    deleteNode(heapofints, sizeofarray, rightIndex(index));
+  }else{
+    cout<<heapofints[leftIndex(index)]<<" at "<<leftIndex(index)<<" bigger than "<<heapofints[rightIndex(index)]<<" at "<<rightIndex(index)<<". Swapping it with"<<heapofints[index]<<" at "<<index<<endl;
+    swap(heapofints[leftIndex(index)],heapofints[index]);
+    deleteNode(heapofints, sizeofarray, leftIndex(index));
+  }
+  
+  return;
+}
+
+void bubbleTo(int*& heapofints,int index){
+  /*
+  if(parentIndex(index)==-1){
+    cout<<heapofints[index]<<" reached top at "<<index<<endl;
+    return;
+  }
+  */
+  if(heapofints[parentIndex(index)]<heapofints[index]){
+    cout<<heapofints[index]<<" at "<<index<<" bigger than "<<heapofints[parentIndex(index)]<<" at "<<parentIndex(index)<<". Swapping the two"<<endl;
+    swap(heapofints[parentIndex(index)] , heapofints[index]);
+    bubbleTo(heapofints, parentIndex(index));
+  }else{
+    cout<<heapofints[index]<<" at "<<index<<" smaller than "<<heapofints[parentIndex(index)]<<" at "<<parentIndex(index)<<". placement complete!"<<endl;
+  }
+  return;
+}
+
+void swap(int& one, int& two){
+  int buff=one;
+  one=two;
+  two=buff;
+  return;
+}
+
+void printStraight(int* heapofints, int addon, int sizeofarray,bool shownum){
+  cout<<"[";
+  if(shownum){
+    for(int i=addon; i<sizeofarray+addon; i++){
+      cout<<i<<":";
+      if(heapofints[i]!=-1){
+        if((int)log10(heapofints[i])==0){
+	  cout<<" "<<heapofints[i]<<" ";
+	}else if((int)log10(heapofints[i])==1){
+	  cout<<heapofints[i]<<" ";
+	}else {
+	  cout<<heapofints[i];
+	}
+      }else{
+	cout<<"    ";
+      }
+      if(i!=sizeofarray+addon-1){
+	cout<<",";
+      }
+    }
+  }else{
+    for(int i=addon; i<sizeofarray+addon; i++){
+      if(heapofints[i]!=-1){
+	if((int)log10(heapofints[i])==0){
+	  cout<<" "<<heapofints[i]<<" ";
+	}else if((int)log10(heapofints[i])==1){
+	  cout<<heapofints[i]<<" ";
+	}else {
+	  cout<<heapofints[i];
+	}
+      }else{
+	cout<<" ";
+      }
+      if(i!=sizeofarray+addon-1){
+	cout<<",";
+      }
+    }
+  }
+  cout<<"]"<<endl;
+  return;
+}
+void printEasy(int* heapofints, int sizeofarray){
+  int earl=earliestOpenIndex(heapofints,sizeofarray);
+  
+  if(earl>62){
+    
+  }else if(earl>30){
+    
+  }else if(earl>14){
+    
+  }else if(earl>6){
+    
+  }else if(earl>2){
+    
+  }else{
+    
+  }
+  return;
+}
+
+void RecPrint()
