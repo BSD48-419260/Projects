@@ -1,0 +1,28 @@
+#include <iostream>
+#include "node.h"
+
+using namespace std;
+
+Node::Node(char* argdata) {
+    data = argdata;
+    link = nullptr;
+}
+
+Node::~Node() {
+    delete data;
+    link = nullptr;
+}
+
+Node* Node::getNext() {
+    return link;
+}
+
+char* Node::getChar() {
+    return data;
+
+}
+
+void Node::setNext(Node* arglink) {
+   link = arglink;
+
+}
