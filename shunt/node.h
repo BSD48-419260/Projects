@@ -3,7 +3,7 @@
 
 class Node {
  public:
-  Node(Char* data); //Node constructor
+  Node(char* data); //Node constructor
   ~Node(); //Node destructor
   char* getChar(); //Getter for data
   Node* getNext(); //Getter for link

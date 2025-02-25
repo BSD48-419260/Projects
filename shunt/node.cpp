@@ -48,6 +48,6 @@ Node* Node::getRight() {
 }
 
 void Node::setRight(Node* arglink) {
-   Right = arglink;
+   right = arglink;
 
 }
