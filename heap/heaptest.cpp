@@ -43,7 +43,7 @@ int main(){
   while(notQuit){
     try{
       //robust command handler.
-      cout<<"Please input a command. (Valid commands: ADD, ADDFILE, DELETE, PRINT, QUIT)"<<endl;
+      cout<<"Please input a command. (Valid commands: ADD, ADDFILE, DELETE, DELETEALL, PRINT, QUIT)"<<endl;
       for(int i=0; i<10; i++){
 	inpstring[i]='\0';
       }
@@ -57,11 +57,13 @@ int main(){
       }else if (strcmp(inpstring,"ADDFILE")==0){
 	addFromFile(heapofints, sizeofarray);
       }else if (strcmp(inpstring,"DELETE")==0){
-	cout<<"Heap as picture:"<<endl;
-	RecPrint(0,0,sizeofarray,heapofints);
-	cout<<"Heap as array with indexes to assist when identifying which number to delete."<<endl;
-	printStraight(heapofints,0,sizeofarray,true);
-	deleteNode(heapofints,sizeofarray,getInt());
+	cout<<"top of heap:"<<heapofints[0]<<endl;
+	deleteNode(heapofints,sizeofarray,0);
+      }else if (strcmp(inpstring,"DELETEALL")==0){
+        while(heapofints[0]!=-1){
+	  cout<<"top of heap:"<<heapofints[0]<<endl;
+	  deleteNode(heapofints,sizeofarray,0);
+	}
       }else if (strcmp(inpstring,"PRINT")==0){
 	cout<<"Heap as picture:"<<endl;
 	RecPrint(0,0,sizeofarray,heapofints);
@@ -110,6 +112,7 @@ int earliestOpenIndex(int* heapofints, int sizeofarray){
   return -1;
 }
 
+
 //for getting Ints from the user.
 int getInt(){
   bool acin=false;
@@ -127,7 +130,6 @@ int getInt(){
   }
   return Integ;
 }
-
 
 //Just adds a node. calls the bubbleTofunction, which contains recursive sorting.
 void addNode(int*& heapofints, int sizeofarray, int toadd){
