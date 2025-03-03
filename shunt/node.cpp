@@ -7,47 +7,44 @@ using namespace std;
  */
 
 Node::Node(char* argdata) {
-    charac = argdata;
-    link = nullptr;
-    left = nullptr;
-    right = nullptr;
+  charac[0] = argdata[0];
+  charac[1] = '\0';
+  link = nullptr;
+  left = nullptr;
+  right = nullptr;
 }
 
 Node::~Node() {
-    delete data;
-    link = nullptr;
-    left = nullptr;
-    right = nullptr;
+  delete[] charac;
+  link = nullptr;
+  left = nullptr;
+  right = nullptr;
 }
 
 char* Node::getChar() {
-    return data;
-
+  return charac;
 }
 
 Node* Node::getNext() {
-    return link;
+  return link;
 }
 
 void Node::setNext(Node* arglink) {
-   link = arglink;
-
+  link = arglink;
 }
 
 Node* Node::getLeft() {
-    return left;
+  return left;
 }
 
 void Node::setLeft(Node* arglink) {
-   left = arglink;
-
+  left = arglink;
 }
 
 Node* Node::getRight() {
-    return right;
+  return right;
 }
 
 void Node::setRight(Node* arglink) {
-   right = arglink;
-
+  right = arglink;
 }

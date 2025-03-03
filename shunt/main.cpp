@@ -7,31 +7,36 @@ using namespace std;
 
 //function signatures
 void getStringFromInput(char* inpstring);
-void push(Node* & Head, char* ToAdd);
-char* pop(Node* & Head);
-char* peek(Node* & Head);
-void enqueue(Node* & Head, char* ToAdd);
-char* dequeue(Node* Head, bool & secondToLast);
+void push(Node* & Head, Node* ToAdd);
+Node* pop(Node* & Head);
+Node* peek(Node* & Head);
+void enqueue(Node* & Head, Node* ToAdd);
+Node* dequeue(Node* & Head);
+Node* getLast(Node* Head);
+void removeLast(Node* & Head);
 void printList(Node* Head);
-int precedence(char* toTest);
+int precedence(char toTest);
 int NodeLength();
 void infixToPostfix(Node * & inStack);
 Node* getStackFromInput();
 
 int main(){
   Node* warmaster_horus=getStackFromInput();
+  printList(warmaster_horus);
+  infixToPostfix(warmaster_horus);
+  printList(warmaster_horus);
   return 0; 
 }
 
 void getStringFromInput(char* inpstring){
-  char bufferarray [16];
+  char bufferarray [21];
   //make sure it works
   bool acin=false;
-  for(int i=0;i<16;i++){
+  for(int i=0;i<21;i++){
     bufferarray[i]='\0';
   }
   while(acin==false){
-    cout<<"15 characters or less, please."<<endl;
+    cout<<"20 characters or less, please."<<endl;
     cin.getline(bufferarray, sizeof(bufferarray),'\n');
     //being robust.
     if(cin.fail()){
@@ -42,60 +47,65 @@ void getStringFromInput(char* inpstring){
       acin=true;
     }
   }
-  strncpy(inpstring, bufferarray, 15);
-  inpstring[15]='\0';
+  strncpy(inpstring, bufferarray, 20);
+  inpstring[20]='\0';
   cout<<endl;
   return;
 }
 
 //treats Head like a stack and Pushes.
-void push(Node* & Head, char* ToAdd){
-  Node* newNode = new Node(ToAdd);
-  if(Head->getChar()!=nullptr){
-    newNode->setNext(Head);
-  }
-  Head=newNode;
+void push(Node* & Head, Node* ToAdd){
+  ToAdd->setNext(Head);
+  Head=ToAdd;
 }
 
 //treats Head like a stack and Pops.
-char* pop(Node* & Head){
-  char* mychar = Head->getChar();
+Node* pop(Node* & Head){
   Node* box = Head;
   Head=Head->getNext();
-  delete box;
-  return mychar;
+  return box;
 }
 
 //treats Head like a stack and Peeks.
-char* peek(Node* & Head){
-  return Head->getChar();
+Node* peek(Node* & Head){
+  return Head->getNext();
 }
 
 //treats Head like a queue and Enqueues. Yes, it is indistinguisable from Push but the name helps me remember.
-void enqueue(Node* & Head, char* ToAdd){
-  Node* newNode = new Node(ToAdd);
-  if(Head->getChar()!=nullptr){
-    newNode->setNext(Head);
-  }
-  Head=newNode;
+void enqueue(Node* & Head, Node* ToAdd){
+  ToAdd->setNext(Head);
+  Head=ToAdd;
 }
 
 //treats Head like a stack and Dequeues.
-char* dequeue(Node* Head,bool & nextIsLast){
+Node* dequeue(Node* & Head){
+  Node* last= getLast(Head);
+  if(Head->getNext()==nullptr){
+    Head=nullptr;
+    return last;
+  }
+  removeLast(Head);
+  return last;
+}
+
+
+Node* getLast(Node* Head){
   if(Head==nullptr){
     return nullptr;
   }
   if(Head->getNext()==nullptr){
-    nextIsLast=true;
-    return Head->getChar();
+    return Head;
   }else{
-    bool test = false;
-    char* ret = dequeue(Head->getNext(),test);
-    if(test){
-      delete Head->getNext();
-      Head->setNext(nullptr);
-    }
-    return ret;
+    return getLast(Head->getNext());
+  }
+}
+
+
+void removeLast(Node* & Head){
+  if (Head==nullptr){
+    return;
+  }if (Head->getNext()->getNext()==nullptr){
+    Head->setNext(nullptr);
   }
 }
 
@@ -110,6 +120,7 @@ void printList(Node* Head){
   }
   cout<<Head->getChar();
   if(Head->getNext()!=nullptr){
+    cout<<", ";
     printList(Head->getNext());
   }else{
     cout<<endl;
@@ -118,14 +129,14 @@ void printList(Node* Head){
 }
 
 //checks if a character is an operator and returns it's precedence based on that. if called on a number, returns 0.
-int precedence(char* toTest){
-  if((*toTest=='(')||(*toTest==')')){
+int precedence(char toTest){
+  if((toTest=='(')||(toTest==')')){
     return -1;
-  }else if(*toTest=='^'){
+  }else if(toTest=='^'){
     return 4;
-  }else if((*toTest=='x')||(*toTest=='*')||(*toTest=='/')||(*toTest=='÷')){
+  }else if((toTest=='x')||(toTest=='*')||(toTest=='/')){
     return 3;
-  }else if((*toTest=='+')||(*toTest=='-')){
+  }else if((toTest=='+')||(toTest=='-')){
     return 2;
   }else{
     return 0;
@@ -134,35 +145,44 @@ int precedence(char* toTest){
 
 //converts infix notation script to postfix notation script. Also known as the 'Shunting Yard' algorithim
 void infixToPostfix(Node * & inQueue){
-  Node* outQueue;
-  Node* shuntStack;
-  char* currentChar;
-  bool headalone=false;
+  printList(inQueue);
+  Node* outQueue = nullptr;
+  Node* shuntStack = nullptr;
+  Node* currentNode =nullptr;
   while(inQueue!=nullptr){
-    if(headalone){
-      currentChar=inQueue->getChar();
-      delete inQueue;
-      inQueue=nullptr;
-    }else{
-      currentChar= dequeue(inQueue,headalone);
+    if(currentNode!=nullptr){
+      cout<<*(currentNode->getChar())<<endl;
     }
-    
-    if(precedence(currentChar)==0){
-      enqueue(outQueue, currentChar);
-    }else if(*currentChar=='('){
-      push(shuntStack, currentChar);
-    }else if(*currentChar==')'){
-      while(*peek(shuntStack)!='('){
+    cout<<"_____________"<<endl;
+    currentNode=dequeue(inQueue);
+    cout<<*(currentNode->getChar())<<endl;
+    printList(inQueue);
+    printList(shuntStack);
+    printList(outQueue);
+    if(precedence(*(currentNode->getChar()))==0){
+      cout<<"Curse"<<endl;
+      enqueue(outQueue, currentNode);
+    }else if(*(currentNode->getChar())=='('){
+      cout<<"Sanguine"<<endl;
+      push(shuntStack, currentNode);
+    }else if(*(currentNode->getChar())==')'){
+      cout<<"Ferrus"<<endl;
+      while(*(peek(shuntStack)->getChar())!='('){
+	cout<<"Mannus"<<endl;
 	enqueue(outQueue,pop(shuntStack));
       }
-      char* box=pop(shuntStack);
+      cout<<"Iron"<<endl;
+      Node* box=pop(shuntStack);
+      cout<<"Tenth"<<endl;
       delete box;
-      delete currentChar;
+      delete currentNode;
     }else{
-      while ((*peek(shuntStack)!='(')&&((precedence(peek(shuntStack))>precedence(currentChar))||((precedence(peek(shuntStack))==precedence(currentChar))&&(*currentChar!='^')))){
+      cout<<"Angry"<<endl;
+      while ((*(peek(shuntStack)->getChar())!='(')&&((precedence(*(peek(shuntStack)->getChar()))>precedence(*(currentNode->getChar())))||((precedence(*(peek(shuntStack)->getChar()))==precedence(*(currentNode->getChar())))&&(*(currentNode->getChar())!='^')))){
 	enqueue(outQueue,pop(shuntStack));
       }
-      push(shuntStack,currentChar);
+      cout<<"Rouboute"<<endl;
+      push(shuntStack,currentNode);
     }
   }
   while(peek(shuntStack)!=nullptr){
@@ -170,20 +190,28 @@ void infixToPostfix(Node * & inQueue){
   }
   inQueue=outQueue;
   delete shuntStack;
-  delete currentChar;
-  
+}
+
+int NodeLength(){
+  return 0;
 }
 
 Node* getStackFromInput(){
-  Node* buffer;
-  char* inputbuffer = new char[16];
+  Node* buffer = nullptr;
+  //Node* revbuf = nullptr;
+  char* inputbuffer = new char[21];
   getStringFromInput(inputbuffer);
-  for(int i=0; i<16; i++){
-    if(inputbuffer[i]=='\0'){
-      cout<<" \\0";
-    }else{
-      cout<<inputbuffer[i];
+  for(int i=0; i<21; i++){
+    if(inputbuffer[i]!='\0'){
+      enqueue(buffer,new Node(inputbuffer+i));
     }
   }
+  delete[] inputbuffer;
   return buffer;
+  //while(buffer!=nullptr){
+  //  enqueue(revbuf,pop(buffer));
+  //}
+  //delete buffer;
+  //return revbuf;
 }
+
