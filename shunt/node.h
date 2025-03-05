@@ -12,7 +12,7 @@ class Node {
   void setLeft(Node* arglink); //Setter for left
   Node* getRight(); //Getter for right
   void setRight(Node* arglink); //Setter for right
-  char* charac = new char[1];
+  char* charac = new char[2];
   Node* link;
   Node* left;
   Node* right;

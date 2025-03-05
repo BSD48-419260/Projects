@@ -1,3 +1,10 @@
+/*
+  Main.cpp for Shunting Yard Algorithim Project.
+  Made by Elliott VanOrman for Jason Galbraith's C++/Data Structures class.
+
+  Takes in a formula in Infix, Translates it into Postifx, then restructures it into a binary expression tree that can be expressed as any of Prefix, Infix, and Postfix
+
+*/
 #include <iostream>
 #include <cmath>
 #include <fstream>
@@ -13,30 +20,63 @@ Node* peek(Node* & Head);
 void enqueue(Node* & Head, Node* ToAdd);
 Node* dequeue(Node* & Head);
 Node* getLast(Node* Head);
-void removeLast(Node* & Head);
+void removeLast(Node* Head);
 void printList(Node* Head);
 int precedence(char toTest);
-int NodeLength();
-void infixToPostfix(Node * & inStack);
+void infixToPostfix(Node * & inQueue);
+void PostfixToTree(Node * & inQueue);
 Node* getStackFromInput();
+int length(Node* Head, int Size);
+void RecPrintInf(Node* tree);
+void RecPrintPre(Node* tree);
+void RecPrintPos(Node* tree);
 
+//main. 
 int main(){
-  Node* warmaster_horus=getStackFromInput();
-  printList(warmaster_horus);
-  infixToPostfix(warmaster_horus);
-  printList(warmaster_horus);
+
+  cout<<"======================================="<<endl;
+  cout<<"Welcome to:"<<endl;
+  cout<<"_____   ___________    ____            "<<endl;
+  cout<<"\   /   \___   ___/   / __ \           "<<endl;
+  cout<<" | |        | |      / /  \ \          "<<endl;
+  cout<<" | |        | |     / /____\ \         "<<endl;
+  cout<<" | |        | |    / ________ \        "<<endl;
+  cout<<" | |        | |    | |      | |        "<<endl;
+  cout<<" | |        | |    | |      | |        "<<endl;
+  cout<<"/___\ nfix /___\o /___\    /___\llfixes"<<endl;
+  cout<<"(To avoid confusion, Allfixes means all of prefix,infix, and postfix)"<<endl;
+  //getting formula
+  Node* mathLinkedList=getStackFromInput();
+  //confirming formula is correct
+  cout<<"Currrent List:"<<endl;
+  printList(mathLinkedList);
+  //converting formula to postfix, confirming again.
+  cout<<endl<<"Postfixed:"<<endl;
+  infixToPostfix(mathLinkedList);
+  printList(mathLinkedList);
+  cout<<endl;
+  //converting formula to Tree, printing results 
+  PostfixToTree(mathLinkedList);
+  cout<<"Converted to tree!"<<endl<<"Infix:"<<endl;
+  RecPrintInf(mathLinkedList);
+  cout<<endl<<"Prefix:"<<endl;
+  RecPrintPre(mathLinkedList);
+  cout<<endl<<"Postfix:"<<endl;
+  RecPrintPos(mathLinkedList);
+  cout<<endl;
   return 0; 
 }
 
+//input getter
 void getStringFromInput(char* inpstring){
-  char bufferarray [21];
+  char bufferarray [101];
   //make sure it works
   bool acin=false;
-  for(int i=0;i<21;i++){
+  for(int i=0;i<101;i++){
     bufferarray[i]='\0';
   }
   while(acin==false){
-    cout<<"20 characters or less, please."<<endl;
+    cout<<"100 characters or less, please."<<endl;
     cin.getline(bufferarray, sizeof(bufferarray),'\n');
     //being robust.
     if(cin.fail()){
@@ -47,8 +87,8 @@ void getStringFromInput(char* inpstring){
       acin=true;
     }
   }
-  strncpy(inpstring, bufferarray, 20);
-  inpstring[20]='\0';
+  strncpy(inpstring, bufferarray, 100);
+  inpstring[100]='\0';
   cout<<endl;
   return;
 }
@@ -66,12 +106,12 @@ Node* pop(Node* & Head){
   return box;
 }
 
-//treats Head like a stack and Peeks.
+//treats Head like a stack and Peeks. Functionally speaking this is completely useless but it's meant for readability.
 Node* peek(Node* & Head){
-  return Head->getNext();
+  return Head;
 }
 
-//treats Head like a queue and Enqueues. Yes, it is indistinguisable from Push but the name helps me remember.
+//treats Head like a queue and Enqueues. Functionally indistinguisable from Push but again, readability.
 void enqueue(Node* & Head, Node* ToAdd){
   ToAdd->setNext(Head);
   Head=ToAdd;
@@ -79,6 +119,7 @@ void enqueue(Node* & Head, Node* ToAdd){
 
 //treats Head like a stack and Dequeues.
 Node* dequeue(Node* & Head){
+  //a while ago I realized it would be much easier for me to handle getting the last node and removing the last node seprately, so here I do just that.
   Node* last= getLast(Head);
   if(Head->getNext()==nullptr){
     Head=nullptr;
@@ -88,7 +129,7 @@ Node* dequeue(Node* & Head){
   return last;
 }
 
-
+//gets the last node in a LinkedList. for dequeue.
 Node* getLast(Node* Head){
   if(Head==nullptr){
     return nullptr;
@@ -100,16 +141,18 @@ Node* getLast(Node* Head){
   }
 }
 
-
-void removeLast(Node* & Head){
+//removes the last node in a list. also for dequeue.
+void removeLast(Node* Head){
   if (Head==nullptr){
     return;
   }if (Head->getNext()->getNext()==nullptr){
     Head->setNext(nullptr);
+  }else{
+    removeLast(Head->getNext());
   }
 }
 
-//linkedlist printer
+//linkedlist printer. does it both backwards and forwards because normally queues are printed in reverse for it.
 void printList(Node* Head){
   if(Head==nullptr){
     cout<<"Empty"<<endl;
@@ -124,11 +167,16 @@ void printList(Node* Head){
     printList(Head->getNext());
   }else{
     cout<<endl;
+    cout<<Head->getChar();
+    cout<<", ";
     return;
   }
+  cout<<Head->getChar();
+  cout<<", ";
 }
 
-//checks if a character is an operator and returns it's precedence based on that. if called on a number, returns 0.
+
+//checks if a character is an operator and returns it's precedence based on that. if called on a number, returns 0. technically means most letters can be used in place of numbers.
 int precedence(char toTest){
   if((toTest=='(')||(toTest==')')){
     return -1;
@@ -143,45 +191,47 @@ int precedence(char toTest){
   }
 }
 
-//converts infix notation script to postfix notation script. Also known as the 'Shunting Yard' algorithim
+//converts infix notation fomrulae to postfix notation formulae. Also known as the 'Shunting Yard' algorithim
 void infixToPostfix(Node * & inQueue){
-  printList(inQueue);
+  //printList(inQueue);
   Node* outQueue = nullptr;
   Node* shuntStack = nullptr;
   Node* currentNode =nullptr;
   while(inQueue!=nullptr){
+    /*
+    //this oddly-inserted comment of code is for telemetry. once I finished debugging, I didn't need it but I still like to see it in action so I understand how it works.
     if(currentNode!=nullptr){
       cout<<*(currentNode->getChar())<<endl;
     }
     cout<<"_____________"<<endl;
+    //*/
     currentNode=dequeue(inQueue);
+    /*
     cout<<*(currentNode->getChar())<<endl;
     printList(inQueue);
+    cout<<endl;
     printList(shuntStack);
+    cout<<endl;
     printList(outQueue);
+    cout<<endl;
+    //*/
     if(precedence(*(currentNode->getChar()))==0){
-      cout<<"Curse"<<endl;
       enqueue(outQueue, currentNode);
     }else if(*(currentNode->getChar())=='('){
-      cout<<"Sanguine"<<endl;
       push(shuntStack, currentNode);
     }else if(*(currentNode->getChar())==')'){
-      cout<<"Ferrus"<<endl;
       while(*(peek(shuntStack)->getChar())!='('){
-	cout<<"Mannus"<<endl;
 	enqueue(outQueue,pop(shuntStack));
       }
-      cout<<"Iron"<<endl;
       Node* box=pop(shuntStack);
-      cout<<"Tenth"<<endl;
       delete box;
       delete currentNode;
     }else{
-      cout<<"Angry"<<endl;
-      while ((*(peek(shuntStack)->getChar())!='(')&&((precedence(*(peek(shuntStack)->getChar()))>precedence(*(currentNode->getChar())))||((precedence(*(peek(shuntStack)->getChar()))==precedence(*(currentNode->getChar())))&&(*(currentNode->getChar())!='^')))){
-	enqueue(outQueue,pop(shuntStack));
+      if(shuntStack!=nullptr){
+	while ((shuntStack!=nullptr)&&((*(peek(shuntStack)->getChar())!='(')&&((precedence(*(peek(shuntStack)->getChar()))>precedence(*(currentNode->getChar())))||((precedence(*(peek(shuntStack)->getChar()))==precedence(*(currentNode->getChar())))&&(*(currentNode->getChar())!='^'))))){
+	  enqueue(outQueue,pop(shuntStack));
+	}
       }
-      cout<<"Rouboute"<<endl;
       push(shuntStack,currentNode);
     }
   }
@@ -192,26 +242,94 @@ void infixToPostfix(Node * & inQueue){
   delete shuntStack;
 }
 
-int NodeLength(){
-  return 0;
+//converts Postfix notation formulae to a binary expression tree
+void PostfixToTree(Node * & inQueue){
+  Node* workingStack = nullptr;
+  Node* currentNode =nullptr;
+  while(length(inQueue,1)!=0){
+    currentNode = dequeue(inQueue);
+    if (length(workingStack,1)>1){
+      if (precedence(*(currentNode->getChar()))!=0){
+	currentNode->setLeft(pop(workingStack));
+	currentNode->setRight(pop(workingStack));
+	push(workingStack,currentNode);
+      }else{
+	push(workingStack,currentNode);
+      }
+    }else{
+      push(workingStack,currentNode);
+    }
+  }
+  inQueue = workingStack;
 }
 
+//takes in user input and converts it to a linkedList containing a formula.
 Node* getStackFromInput(){
   Node* buffer = nullptr;
   //Node* revbuf = nullptr;
-  char* inputbuffer = new char[21];
+  char* inputbuffer = new char[101];
   getStringFromInput(inputbuffer);
-  for(int i=0; i<21; i++){
-    if(inputbuffer[i]!='\0'){
+  for(int i=0; i<101; i++){
+    if((inputbuffer[i]!='\0')&&(inputbuffer[i]!=' ')){
       enqueue(buffer,new Node(inputbuffer+i));
     }
   }
   delete[] inputbuffer;
   return buffer;
-  //while(buffer!=nullptr){
-  //  enqueue(revbuf,pop(buffer));
-  //}
-  //delete buffer;
-  //return revbuf;
+}
+//gets the length of an expression
+int length(Node* Head, int Size){
+  if(Head==nullptr){
+    return 0;
+  }
+  if(Head->getNext()==nullptr){
+    return Size;
+  }
+  return length(Head->getNext(),Size+1);
 }
 
+//Recursive Print Infix. modified version of the heap print code Mr.Galbraith provided.
+void RecPrintInf(Node* tree){
+  if(tree==nullptr){
+    return;
+  }
+  
+  if(tree->getRight()!=nullptr){
+    cout<<'(';
+    RecPrintInf(tree->getRight());
+  }
+  cout<<*(tree->getChar())<<' ';
+  if(tree->getLeft()!=nullptr){
+    RecPrintInf(tree->getLeft());
+    cout<<')';
+  }
+}
+
+//Recursive Print Prefix. modified version of the heap print code Mr.Galbraith provided.
+void RecPrintPre(Node* tree){
+  if(tree==nullptr){
+    return;
+  }
+  cout<<*(tree->getChar())<<' ';
+  if(tree->getRight()!=nullptr){
+    RecPrintPre(tree->getRight());
+  }
+  if(tree->getLeft()!=nullptr){
+    RecPrintPre(tree->getLeft());
+  }
+}
+
+//Recursive Print Postfix. modified version of the heap print code Mr.Galbraith provided.
+void RecPrintPos(Node* tree){
+  if(tree==nullptr){
+    return;
+  }
+  
+  if(tree->getRight()!=nullptr){
+    RecPrintPos(tree->getRight());
+  }
+  if(tree->getLeft()!=nullptr){
+    RecPrintPos(tree->getLeft());
+  }
+  cout<<*(tree->getChar())<<' ';
+}
