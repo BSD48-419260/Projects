@@ -1,0 +1,101 @@
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <cstring>
+#include "node.cpp"
+using namespace std;
+
+//function signatures
+void getStringFromInput(char* inpstring);
+void RecPrint(int depth, Node* Head);
+//main. 
+int main(){
+  int root = 500;
+  Node* head=new node(&root);
+  return 0; 
+}
+
+void getStringFromInput(char* inpstring){
+  char bufferarray [11];
+  //make sure it works
+  bool acin=false;
+  for(int i=0;i<11;i++){
+    bufferarray[i]='\0';
+  }
+  while(acin==false){
+    cout<<"10 characters or less, please."<<endl;
+    cin.getline(bufferarray, sizeof(bufferarray),'\n');
+    //being robust.
+    if(cin.fail()){
+      cout<<"I think you did something wrong. Please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      acin=true;
+    }
+  }
+  strncpy(inpstring, bufferarray, 10);
+  inpstring[10]='\0';
+  cout<<endl;
+  return;
+}
+
+//linkedlist printer.
+void printList(Node* Head){
+  if(Head==nullptr){
+    cout<<"Empty"<<endl;
+    return;
+  }else if(Head->getInt()==nullptr){
+    cout<<"Empty"<<endl;
+    return;
+  }
+  cout<<*(Head->getInt());
+  if(Head->getNext()!=nullptr){
+    cout<<", ";
+    printList(Head->getNext());
+  }else{
+    cout<<endl;
+    cout<<Head->*(Head->getInt());
+    cout<<", ";
+    return;
+  }
+}
+
+void RecPrint(int depth,Node* tree)
+{
+  if(tree==nullptr){
+    return;
+  }
+  if(tree->getRight()!=nullptr){
+    RecPrintInf(depth+1, tree->getRight());
+  }
+  for(int i=0; i<depth;i++){
+    cout<<"\t";
+  }
+  cout<<(*(tree->getInt()))<<endl;
+  if(tree->getLeft()!=nullptr){
+    RecPrintInf(depth+1, tree->getLeft());
+  }
+}
+
+void addNode(Node & Head, Node ToAdd){
+
+}
+
+void addNodeRecursive(Node* Cur, Node* ToAdd){
+  if(*(ToAdd->getInt())<*(Cur->getInt())){
+    if(Cur->getLeft()==nullptr){
+      Cur->setLeft(toAdd);
+    }else{
+      addNodeRecursive(Cur->getLeft(),ToAdd);
+    }
+  }else if(*(ToAdd->getInt())>*(Cur->getInt())){
+    if(Cur->getRight()==nullptr){
+      Cur->setRight(toAdd);
+    }else{
+      addNodeRecursive(Cur->getRight(),ToAdd);
+    }
+  }else{
+
+  }
+}

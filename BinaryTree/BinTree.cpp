@@ -1,0 +1,172 @@
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <cstring>
+#include "node.cpp"
+using namespace std;
+
+//function signatures
+void getStringFromInput(char* inpstring);
+void RecPrint(int depth, Node* Head);
+void printList(Node* Head);
+void addNode(Node* & Head, Node* ToAdd);
+void addNodeRecursive(Node* Cur, Node* ToAdd);
+void removeNode(Node* Head, int nodeVal);
+void handleDeletedNode(Node* Head);
+void ShiftTillLast(Node* Head);
+
+//main. 
+int main(){
+  srand(time(0));
+  Node* head= nullptr;
+  Node* buf = nullptr;
+  for(int i=0; i<2000; i++){
+    buf = new Node(new int((rand()%1000)+1));
+    addNode(head, buf);
+  }
+  RecPrint(0, head);
+  return 0; 
+}
+
+void getStringFromInput(char* inpstring){
+  char bufferarray [11];
+  //make sure it works
+  bool acin=false;
+  for(int i=0;i<11;i++){
+    bufferarray[i]='\0';
+  }
+  while(acin==false){
+    cout<<"10 characters or less, please."<<endl;
+    cin.getline(bufferarray, sizeof(bufferarray),'\n');
+    //being robust.
+    if(cin.fail()){
+      cout<<"I think you did something wrong. Please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      acin=true;
+    }
+  }
+  strncpy(inpstring, bufferarray, 10);
+  inpstring[10]='\0';
+  cout<<endl;
+  return;
+}
+
+//linkedlist printer.
+void printList(Node* Head){
+  if(Head==nullptr){
+    cout<<"Empty"<<endl;
+    return;
+  }else if(Head->getInt()==nullptr){
+    cout<<"Empty"<<endl;
+    return;
+  }
+  cout<<*(Head->getInt());
+  if(Head->getNext()!=nullptr){
+    cout<<", ";
+    printList(Head->getNext());
+  }else{
+    return;
+  }
+}
+
+void RecPrint(int depth,Node* tree)
+{
+  if(tree==nullptr){
+    return;
+  }
+  if(tree->getRight()!=nullptr){
+    RecPrint(depth+1, tree->getRight());
+  }
+  for(int i=0; i<depth;i++){
+    cout<<"\t";
+  }
+  printList(tree);
+  //cout<<(*(tree->getInt()))<<endl;
+  cout<<endl;
+  if(tree->getLeft()!=nullptr){
+    RecPrint(depth+1, tree->getLeft());
+  }
+}
+
+void addNode(Node* & Head, Node* ToAdd){
+  if(Head==nullptr){
+    Head=ToAdd;
+  }else{
+    addNodeRecursive(Head, ToAdd);
+  }
+}
+
+void addNodeRecursive(Node* Cur, Node* ToAdd){
+  if(*(ToAdd->getInt())<*(Cur->getInt())){
+    if(Cur->getLeft()==nullptr){
+      Cur->setLeft(ToAdd);
+    }else{
+      addNodeRecursive(Cur->getLeft(),ToAdd);
+    }
+  }else if(*(ToAdd->getInt())>*(Cur->getInt())){
+    if(Cur->getRight()==nullptr){
+      Cur->setRight(ToAdd);
+    }else{
+      addNodeRecursive(Cur->getRight(),ToAdd);
+    }
+  }else{
+    if(Cur->getNext()==nullptr){
+      Cur->setNext(ToAdd);
+    }else{
+      addNodeRecursive(Cur->getNext(),ToAdd);
+    }
+  }
+}
+
+void removeNode(Node* Head,int nodeVal){
+  if((*(Head->getInt()))==nodeVal){
+    if(Head->getNext()!=nullptr){
+      ShiftTillLast(Head);
+    }else{
+      handleDeletedNode(Head);
+    }
+  }else if((*(Head->getInt()))<nodeVal){
+    if(Head->getRight()!=nullptr){
+      removeNode(Head->getRight(), nodeVal);
+    }else{
+      cout<<"There is no Node with that value."<<endl;
+      return;
+    }
+  }else if((*(Head->getInt()))>nodeVal){
+    if(Head->getLeft()!=nullptr){
+      removeNode(Head->getLeft(), nodeVal);
+    }else{
+      cout<<"There is no Node with that value."<<endl;
+      return;
+    }
+  }
+}
+
+void handleDeletedNode(Node* Head){
+  if(Head->getRight()!=nullptr){
+    *(Head->getInt()) = *(Head->getRight()->getInt());
+    handleDeletedNode(Head->getRight());
+  }else if(Head->getLeft()!=nullptr){
+    *(Head->getInt()) = *(Head->getLeft()->getInt());
+    handleDeletedNode(Head->getLeft());
+  }else{
+    Head = nullptr;
+  }
+}
+
+//technically I could just delete the last node in the list and get exactly the same result bcos the only variable we have to chain is an int, but that's not how data actually works in real life so...
+void ShiftTillLast(Node* Head){
+  if (Head==nullptr){
+    return;
+  }
+  *(Head->getInt())=*(Head->getNext()->getInt());
+  if (Head->getNext()->getNext()==nullptr){
+    delete Head->getNext()->getInt();
+    delete Head->getNext();
+    Head->setNext(nullptr);
+  }else{
+    ShiftTillLast(Head->getNext());
+  }
+}
