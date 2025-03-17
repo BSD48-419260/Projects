@@ -1,0 +1,80 @@
+#include <iostream>
+#include "node.h"
+
+using namespace std;
+/*
+  For comments, please see the .h fie.
+ */
+
+Node::Node(int* argdata) {
+  integ = argdata;
+  parent = nullptr;
+  next = nullptr;
+  left = nullptr;
+  right = nullptr;
+  isRed=false;
+}
+
+Node::~Node() {
+  delete integ;
+  parent = nullptr;
+  next = nullptr;
+  left = nullptr;
+  right = nullptr;
+}
+
+int* Node::getInt() {
+  return integ;
+}
+
+Node* Node::getParent(){
+  return parent;
+}
+void Node::setParent(Node* argLink){
+  parent=argLink;
+}
+
+Node* Node::getNext() {
+  return next;
+}
+
+void Node::setNext(Node* argLink) {
+  next = argLink;
+  if(argLink!=nullptr){
+    argLink.setParent(this);
+  }
+}
+
+void Node::setNextOrphaned(Node* argLink) {
+  next = argLink;
+}
+
+Node* Node::getLeft() {
+  return left;
+}
+
+void Node::setLeft(Node* argLink) {
+  left = argLink;
+  if(argLink!=nullptr){
+    argLink.setParent(this);
+  }
+}
+
+void Node::setLeftOrphaned(Node* argLink) {
+  left = argLink;
+}
+
+Node* Node::getRight() {
+  return right;
+}
+
+void Node::setRight(Node* argLink) {
+  right = argLink;
+  if(argLink!=nullptr){
+    argLink.setParent(this);
+  }
+}
+
+void Node::setRightOrphaned(Node* argLink) {
+  right = argLink;
+}
