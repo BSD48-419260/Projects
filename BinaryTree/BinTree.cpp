@@ -337,6 +337,7 @@ int getDepth(Node* Cur, int & depth){
   }
 }
 
+//Adds numbers to the Head node from a file
 void addFromFile(Node* & head){
   ifstream myFile;
   char* filename = new char[101];
@@ -357,7 +358,6 @@ void addFromFile(Node* & head){
       }
     }catch(...){
       cout<<"Something Went Wrong. You are strongly advised to use PRINT to check the structure of the Binary Tree as data may have been corrupted"<<endl;
-
     }
     
   }else{
