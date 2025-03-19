@@ -10,10 +10,16 @@ void getStringFromInput(char* inpstring);
 void printList(Node* Head);
 void RecPrint(int depth, Node* Head);
 void PrintFromEldest(Node* Head);
+Node* getGrandparent(Node* Head);
+Node* getUncle(Node* Head);
 void addNode(Node* & Head, int ToAdd);
-void addNodeRecursive(Node* Cur, Node* ToAdd);
+void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd);
+void handleAddingRedBlack(Node* & Head, Node* ToAdd);
+void repairTree(Node* & Head, Node* Cur);
 Node* removeNode(Node* Head, int nodeVal);
 void ShiftTillLast(Node* Head);
+void RecolorLineage(Node* Head);
+void SwapCol(Node* Head);
 void SwapInts(Node* One, Node* Two);
 Node* GetSucessor(Node* Cur);
 Node* getLastLeft(Node* Cur);
@@ -68,6 +74,7 @@ int main(){
         DetectNumb(Head, getInt(), 0);
       }else if (strcmp(inpstring,"PRINT")==0){
 	RecPrint(0, Head);
+	cout<<"\033[0m";
       }else if (strcmp(inpstring,"QUIT")==0){
 	notQuit=false;
 	//no command needed, just quit the loop.
@@ -120,6 +127,11 @@ void printList(Node* Head){
     cout<<"Empty"<<endl;
     return;
   }
+  if(Head->isRed){
+    cout<<"\033[31m";
+  }else{
+    cout<<"\033[0m";
+  }
   cout<<*(Head->getInt());
   if(Head->getNext()!=nullptr){
     cout<<", ";
@@ -158,6 +170,31 @@ void PrintFromEldest(Node* Head){
   }
 }
 
+//Gets the grandparent of the current node.
+Node* getGrandparent(Node* Head){
+  if(Head->getParent()!=nullptr){
+    return Head->getParent()->getParent();
+  }else{
+    return nullptr;
+  }
+}
+
+//gets the Uncle of the current Node.
+Node* getUncle(Node* Head){
+  if(getGrandparent(Head)!=nullptr){
+    if(getGrandparent(Head)->getLeft()==Head->getParent()){
+      return getGrandparent(Head)->getRight();
+    }else if(getGrandparent(Head)->getRight()==Head->getParent()){
+      return getGrandparent(Head)->getLeft();
+    }else{
+      cout<<"A BIG MISTAKE HAS OCCURED! WE'RE ALL GOING TO DIE!"<<endl;
+      exit(1);
+    }
+  }else{
+    return nullptr;
+  }
+}
+
 //Adder function preamble
 void addNode(Node* & Head, int ToAdd){
   int Integ;
@@ -171,7 +208,7 @@ void addNode(Node* & Head, int ToAdd){
 	  cin.ignore(100000,'\n');
       }else{
 	if(Head!=nullptr){
-	  addNodeRecursive(Head, new Node(new int(Integ)));
+	  addNodeRecursive(Head, Head, new Node(new int(Integ)));
 	}else{
 	  Head = new Node(new int(Integ));
 	}
@@ -183,29 +220,76 @@ void addNode(Node* & Head, int ToAdd){
 
 
 //actual adder function.
-void addNodeRecursive(Node* Cur, Node* ToAdd){
+void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd){
   if(Cur==nullptr){
     Cur=ToAdd;
+    handleAddingRedBlack(Head,ToAdd);
   }else if(*(ToAdd->getInt())<*(Cur->getInt())){
     if(Cur->getLeft()==nullptr){
       Cur->setLeft(ToAdd);
+      handleAddingRedBlack(Head,ToAdd);
     }else{
-      addNodeRecursive(Cur->getLeft(),ToAdd);
+      addNodeRecursive(Head, Cur->getLeft(),ToAdd);
     }
   }else if(*(ToAdd->getInt())>*(Cur->getInt())){
     if(Cur->getRight()==nullptr){
       Cur->setRight(ToAdd);
+      handleAddingRedBlack(Head,ToAdd);
     }else{
-      addNodeRecursive(Cur->getRight(),ToAdd);
+      addNodeRecursive(Head, Cur->getRight(),ToAdd);
     }
   }else{
     if(Cur->getNext()==nullptr){
       Cur->setNext(ToAdd);
+      ToAdd->isRed = Cur->isRed;
     }else{
-      addNodeRecursive(Cur->getNext(),ToAdd);
+      addNodeRecursive(Head, Cur->getNext(),ToAdd);
     }
   }
 }
+
+
+void handleAddingRedBlack(Node* & Head, Node* ToAdd){
+  if(Head!=ToAdd){
+    ToAdd->isRed = true;
+    RecolorLineage(ToAdd);
+    if(getUncle(ToAdd)!=nullptr){
+      if(getUncle(ToAdd)->isRed){
+	SwapCol(ToAdd->getParent());
+	SwapCol(getUncle(ToAdd));
+	SwapCol(getGrandparent(ToAdd));
+        RecolorLineage(ToAdd->getParent());
+        RecolorLineage(getUncle(ToAdd));
+        RecolorLineage(getGrandparent(ToAdd));
+      }else{
+	if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
+	  if(ToAdd->getParent()->getLeft()==ToAdd){
+	    rotRight(Head, ToAdd->getParent());
+	  }else{
+	    rotLeft(Head, ToAdd->getParent());
+	  }
+	}else{
+	  SwapCol(ToAdd->getParent());
+	  SwapCol(getGrandparent(ToAdd));
+	  RecolorLineage(ToAdd->getParent());
+	  RecolorLineage(getGrandparent(ToAdd));
+	  if(ToAdd->getParent()->getLeft()==ToAdd){
+	    rotRight(Head, getGrandparent(ToAdd));
+	  }else{
+	    rotLeft(Head, getGrandparent(ToAdd));
+	  }
+	}
+      }
+    }
+  }
+  Head->isRed=false;
+  //repairTree(Head,Head);
+}
+
+void repairTree(Node* & Head, Node* Cur){
+  
+}
+
 //recursive node remover
 Node* removeNode(Node* Head,int nodeVal){
   if(Head==nullptr){
@@ -262,6 +346,21 @@ void ShiftTillLast(Node* Head){
   }
 }
 
+//changes all nodes in a LinkedList to be the same color as the Head.
+void RecolorLineage(Node* Head){
+  if(Head->getNext()!=nullptr){
+    Head->getNext()->isRed = Head->isRed;
+    RecolorLineage(Head->getNext());
+  }
+}
+
+//if a node is Red, it makes it black. if a node is Black, it makes it red.
+void SwapCol(Node* Head){
+  if(Head!=nullptr){
+    Head->isRed=(!(Head->isRed));
+  }
+}
+
 //Swaps out the contents of two Nodes. suprisingly useful.
 void SwapInts(Node* One, Node* Two){
   int holder = *(One->getInt());
@@ -308,18 +407,9 @@ int getInt(){
 void DetectNumb(Node* Cur, int Check, int Depth){
   if((*(Cur->getInt()))==Check){
     if(Cur->getNext()==nullptr){
-      cout<<"THIS IS A TEST!"<<endl;
-      PrintFromEldest(Cur);
-      Node* glob= new node(0);
-      rotLeft(glob,Cur);
-      PrintFromEldest(Cur);
       cout<<"That number appears in the tree! it appears only once."<<endl;
       cout<<"It's parent node was ";
     }else{
-      PrintFromEldest(Cur);
-      Node* & Head, 
-	rotRight(glob, Cur);
-      PrintFromEldest(Cur);
       int Dep = 0;
       cout<<"That number appears in the tree! it appears "<<getDepth(Cur,Dep)<<" times."<<endl;
     }
@@ -371,7 +461,7 @@ void addFromFile(Node* & head){
     try{
       while(myFile>>got){
 	if(head!=nullptr){
-	  addNodeRecursive(head, new Node(new int(got)));
+	  addNodeRecursive(head,head, new Node(new int(got)));
 	}else{
 	  head=new Node(new int(got));
 	}
