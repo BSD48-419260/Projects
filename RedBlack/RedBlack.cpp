@@ -188,6 +188,12 @@ Node* getUncle(Node* Head){
       return getGrandparent(Head)->getLeft();
     }else{
       cout<<"A BIG MISTAKE HAS OCCURED! WE'RE ALL GOING TO DIE!"<<endl;
+      cout<<"Node: "<<*(Head->getInt())<<endl;
+      cout<<"Parent: "<<*(Head->getParent()->getInt())<<endl;
+      cout<<"Grandparent: "<<*(getGrandparent(Head)->getInt())<<endl;
+      cout<<"Grandpa's Kids:"<<endl;
+      cout<<*(getGrandparent(Head)->getLeft()->getInt())<<" (Left) "<<endl;
+      cout<<*(getGrandparent(Head)->getRight()->getInt())<<" (Right) "<<endl;
       exit(1);
     }
   }else{
@@ -248,29 +254,41 @@ void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd){
   }
 }
 
-
 void handleAddingRedBlack(Node* & Head, Node* ToAdd){
+  cout<<"----------------"<<endl;
+  RecPrint(0,Head);
+  cout<<"----------------"<<endl;
+  Head->isRed=false;
+  RecolorLineage(Head);
   if(Head!=ToAdd){
     ToAdd->isRed = true;
     RecolorLineage(ToAdd);
-    if(getUncle(ToAdd)!=nullptr){
+    if(!(ToAdd->getParent()->isRed)){
+      return;
+    }if(getUncle(ToAdd)!=nullptr){
       if(getUncle(ToAdd)->isRed){
-	SwapCol(ToAdd->getParent());
-	SwapCol(getUncle(ToAdd));
-	SwapCol(getGrandparent(ToAdd));
-        RecolorLineage(ToAdd->getParent());
+	ToAdd->getParent()->isRed=false;
+	RecolorLineage(ToAdd->getParent());
+	getUncle(ToAdd)->isRed=false; 
         RecolorLineage(getUncle(ToAdd));
+	getGrandparent(ToAdd)->isRed=true;
         RecolorLineage(getGrandparent(ToAdd));
+	handleAddingRedBlack(Head,getGrandparent(ToAdd));
       }else{
 	if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
 	    rotRight(Head, ToAdd->getParent());
+	    //SwapCol(ToAdd->getRight());
+	    handleAddingRedBlack(Head,ToAdd);
 	  }else{
 	    rotLeft(Head, ToAdd->getParent());
+	    //SwapCol(ToAdd->getLeft());
+	    handleAddingRedBlack(Head,ToAdd);
 	  }
 	}else{
-	  SwapCol(ToAdd->getParent());
-	  SwapCol(getGrandparent(ToAdd));
+	  bool box =ToAdd->getParent()->isRed;
+	  ToAdd->getParent()->isRed=getGrandparent(ToAdd)->isRed;
+	  getGrandparent(ToAdd)->isRed=box;
 	  RecolorLineage(ToAdd->getParent());
 	  RecolorLineage(getGrandparent(ToAdd));
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
@@ -280,10 +298,34 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
 	  }
 	}
       }
+    }else if(getGrandparent(ToAdd)!=nullptr){
+      if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
+	if(ToAdd->getParent()->getLeft()==ToAdd){
+	  rotRight(Head, ToAdd->getParent());
+	  //SwapCol(ToAdd->getRight());
+	  handleAddingRedBlack(Head,ToAdd);
+	}else{
+	  rotLeft(Head, ToAdd->getParent());
+	  //SwapCol(ToAdd->getLeft());
+	  handleAddingRedBlack(Head,ToAdd);
+	}
+      }else{
+	bool box =ToAdd->getParent()->isRed;
+	ToAdd->getParent()->isRed=getGrandparent(ToAdd)->isRed;
+	getGrandparent(ToAdd)->isRed=box;
+	RecolorLineage(ToAdd->getParent());
+	RecolorLineage(getGrandparent(ToAdd));
+	if(ToAdd->getParent()->getLeft()==ToAdd){
+	  rotRight(Head, getGrandparent(ToAdd));
+	}else{
+	  rotLeft(Head, getGrandparent(ToAdd));
+	}
+      }
     }
   }
-  Head->isRed=false;
-  //repairTree(Head,Head);
+  cout<<"----------------"<<endl;
+  RecPrint(0,Head);
+  cout<<"----------------"<<endl;
 }
 
 void repairTree(Node* & Head, Node* Cur){
@@ -478,6 +520,7 @@ void addFromFile(Node* & head){
 }
 
 void rotLeft(Node* & Head,Node* Cur){
+  cout<<"I Am Alpharius: "<<*(Cur->getInt())<<endl;
   Node* ParBox=Cur->getParent();
   Node* OrigRight = Cur->getRight();
   Cur->setRight(OrigRight->getLeft());
@@ -489,11 +532,14 @@ void rotLeft(Node* & Head,Node* Cur){
     }
   }else{
     Head=OrigRight;
+    Head->setParent(nullptr);
   }
   OrigRight->setLeft(Cur);
 }
 
+
 void rotRight(Node* & Head, Node* Cur){
+  cout<<"I Am Omegon: "<<*(Cur->getInt())<<endl;
   Node* ParBox=Cur->getParent();
   Node* OrigLeft = Cur->getLeft();
   Cur->setLeft(OrigLeft->getRight());
@@ -506,6 +552,7 @@ void rotRight(Node* & Head, Node* Cur){
     
   }else{  
     Head=OrigLeft;
+    Head->setParent(nullptr);
   }
   OrigLeft->setRight(Cur);
 }
