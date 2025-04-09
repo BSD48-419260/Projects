@@ -254,6 +254,7 @@ void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd){
   }
 }
 
+
 void handleAddingRedBlack(Node* & Head, Node* ToAdd){
   cout<<"----------------"<<endl;
   RecPrint(0,Head);
@@ -275,27 +276,30 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
         RecolorLineage(getGrandparent(ToAdd));
 	handleAddingRedBlack(Head,getGrandparent(ToAdd));
       }else{
+	// ((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))
+	//                                                                                                    ((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))
 	if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
 	    rotRight(Head, ToAdd->getParent());
 	    //SwapCol(ToAdd->getRight());
-	    handleAddingRedBlack(Head,ToAdd);
+	    handleAddingRedBlack(Head,ToAdd->getRight());
 	  }else{
-	    rotLeft(Head, ToAdd->getParent());
+ 	    rotLeft(Head, ToAdd->getParent());
 	    //SwapCol(ToAdd->getLeft());
-	    handleAddingRedBlack(Head,ToAdd);
+	    handleAddingRedBlack(Head,ToAdd->getLeft());
 	  }
 	}else{
-	  bool box =ToAdd->getParent()->isRed;
-	  ToAdd->getParent()->isRed=getGrandparent(ToAdd)->isRed;
-	  getGrandparent(ToAdd)->isRed=box;
-	  RecolorLineage(ToAdd->getParent());
-	  RecolorLineage(getGrandparent(ToAdd));
+	  Node* origParent=ToAdd->getParent();
+	  Node* origGranparent=ToAdd->getGrandparent();
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
 	    rotRight(Head, getGrandparent(ToAdd));
 	  }else{
 	    rotLeft(Head, getGrandparent(ToAdd));
 	  }
+	  SwapCol(origParent);
+	  RecolorLineage(origParent);
+	  SwapCol(origGrandparent);
+	  RecolorLineage(origGrandparent);
 	}
       }
     }else if(getGrandparent(ToAdd)!=nullptr){
@@ -303,23 +307,24 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
 	if(ToAdd->getParent()->getLeft()==ToAdd){
 	  rotRight(Head, ToAdd->getParent());
 	  //SwapCol(ToAdd->getRight());
-	  handleAddingRedBlack(Head,ToAdd);
+	  handleAddingRedBlack(Head,ToAdd->getRight());
 	}else{
 	  rotLeft(Head, ToAdd->getParent());
 	  //SwapCol(ToAdd->getLeft());
-	  handleAddingRedBlack(Head,ToAdd);
+	  handleAddingRedBlack(Head,ToAdd->getLeft());
 	}
       }else{
-	bool box =ToAdd->getParent()->isRed;
-	ToAdd->getParent()->isRed=getGrandparent(ToAdd)->isRed;
-	getGrandparent(ToAdd)->isRed=box;
-	RecolorLineage(ToAdd->getParent());
-	RecolorLineage(getGrandparent(ToAdd));
+        Node* origParent=ToAdd->getParent();
+	Node* origGranparent=ToAdd->getGrandparent();
 	if(ToAdd->getParent()->getLeft()==ToAdd){
 	  rotRight(Head, getGrandparent(ToAdd));
 	}else{
 	  rotLeft(Head, getGrandparent(ToAdd));
 	}
+	SwapCol(origParent);
+	RecolorLineage(origParent);
+	SwapCol(origGrandparent);
+	RecolorLineage(origGrandparent);
       }
     }
   }
