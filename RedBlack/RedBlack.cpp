@@ -290,7 +290,7 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
 	  }
 	}else{
 	  Node* origParent=ToAdd->getParent();
-	  Node* origGranparent=ToAdd->getGrandparent();
+	  Node* origGrandparent=getGrandparent(ToAdd);
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
 	    rotRight(Head, getGrandparent(ToAdd));
 	  }else{
@@ -315,7 +315,7 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
 	}
       }else{
         Node* origParent=ToAdd->getParent();
-	Node* origGranparent=ToAdd->getGrandparent();
+	Node* origGrandparent=getGrandparent(ToAdd);
 	if(ToAdd->getParent()->getLeft()==ToAdd){
 	  rotRight(Head, getGrandparent(ToAdd));
 	}else{
