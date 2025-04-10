@@ -12,6 +12,8 @@ void RecPrint(int depth, Node* Head);
 void PrintFromEldest(Node* Head);
 Node* getGrandparent(Node* Head);
 Node* getUncle(Node* Head);
+bool isLeft(Node* Head);
+bool isRight(Node* Head);
 void addNode(Node* & Head, int ToAdd);
 void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd);
 void handleAddingRedBlack(Node* & Head, Node* ToAdd);
@@ -137,6 +139,7 @@ void printList(Node* Head){
     cout<<", ";
     printList(Head->getNext());
   }else{
+    cout<<"\033[0m";
     return;
   }
 }
@@ -150,8 +153,13 @@ void RecPrint(int depth,Node* tree)
   if(tree->getRight()!=nullptr){
     RecPrint(depth+1, tree->getRight());
   }
-  for(int i=0; i<depth;i++){
+  for(int i=0; i<depth-1;i++){
     cout<<"\t";
+  }
+  if(isLeft(tree)){
+    cout<<"\\-------";
+  }else if(isRight(tree)){
+    cout<<"/-------";
   }
   printList(tree);
   //cout<<(*(tree->getInt()))<<endl;
@@ -199,6 +207,28 @@ Node* getUncle(Node* Head){
   }else{
     return nullptr;
   }
+}
+
+bool isLeft(Node* Head){
+  if(Head!=nullptr){
+    if(Head->getParent()!=nullptr){
+      if(Head->getParent()->getLeft()==Head){
+	return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool isRight(Node* Head){
+  if(Head!=nullptr){
+    if(Head->getParent()!=nullptr){
+      if(Head->getParent()->getRight()==Head){
+	return true;
+      }
+    }
+  }
+  return false;
 }
 
 //Adder function preamble
