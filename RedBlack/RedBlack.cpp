@@ -12,12 +12,14 @@ void RecPrint(int depth, Node* Head);
 void PrintFromEldest(Node* Head);
 Node* getGrandparent(Node* Head);
 Node* getUncle(Node* Head);
+Node* getSibling(Node* Head);
 bool isLeft(Node* Head);
 bool isRight(Node* Head);
 void addNode(Node* & Head, int ToAdd);
 void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd);
 void handleAddingRedBlack(Node* & Head, Node* ToAdd);
-void repairTree(Node* & Head, Node* Cur);
+int numberOfKids(Node* check);
+Node* repairTree(Node* & Head, Node* Cur);
 Node* removeNode(Node* Head, int nodeVal);
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
@@ -209,6 +211,17 @@ Node* getUncle(Node* Head){
   }
 }
 
+Node* getSibling(Node* Head){
+  if(Head->getParent()!=nullptr){
+    if(isLeft(Head)){
+      return Head->getParent()->getRight();
+    }else if (isRight(Head)){
+      return Head->getParent()->getLeft();
+    }
+  }
+  return nullptr;
+}
+
 bool isLeft(Node* Head){
   if(Head!=nullptr){
     if(Head->getParent()!=nullptr){
@@ -306,16 +319,12 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
         RecolorLineage(getGrandparent(ToAdd));
 	handleAddingRedBlack(Head,getGrandparent(ToAdd));
       }else{
-	// ((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))
-	//                                                                                                    ((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))
 	if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
 	  if(ToAdd->getParent()->getLeft()==ToAdd){
 	    rotRight(Head, ToAdd->getParent());
-	    //SwapCol(ToAdd->getRight());
 	    handleAddingRedBlack(Head,ToAdd->getRight());
 	  }else{
  	    rotLeft(Head, ToAdd->getParent());
-	    //SwapCol(ToAdd->getLeft());
 	    handleAddingRedBlack(Head,ToAdd->getLeft());
 	  }
 	}else{
@@ -336,11 +345,9 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
       if(((ToAdd->getParent()->getLeft()==ToAdd)&&(getGrandparent(ToAdd)->getRight()==ToAdd->getParent()))||((ToAdd->getParent()->getRight()==ToAdd)&&(getGrandparent(ToAdd)->getLeft()==ToAdd->getParent()))){
 	if(ToAdd->getParent()->getLeft()==ToAdd){
 	  rotRight(Head, ToAdd->getParent());
-	  //SwapCol(ToAdd->getRight());
 	  handleAddingRedBlack(Head,ToAdd->getRight());
 	}else{
 	  rotLeft(Head, ToAdd->getParent());
-	  //SwapCol(ToAdd->getLeft());
 	  handleAddingRedBlack(Head,ToAdd->getLeft());
 	}
       }else{
@@ -363,8 +370,58 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
   cout<<"----------------"<<endl;
 }
 
-void repairTree(Node* & Head, Node* Cur){
-  
+int numberOfKids(Node* check){
+  int num=0;
+  if(check->getLeft()!=nullptr){
+    num++;
+  }
+  if(check->getRight()!=nullptr){
+    num++;
+  }
+  return num;
+}
+
+Node* repairTree(Node* & Head, Node* Cur){
+  if(Head->isRed){
+    if(Head->getLeft()==nullptr){
+      Node* box = Head->getRight();
+      delete Head;
+      return box;
+    }else if (Head->getRight()==nullptr){
+      Node* box = Head->getLeft();
+      delete Head;
+      return box;
+    }
+  }else{
+    if(numberOfKids(Head)=1){
+      if(Head->getLeft()==nullptr){
+	if(Head->getRight!=nullptr){
+	  if(Head->getRight()->isRed){
+	    Node* box = Head->getRight();
+	    box->isRed=false;
+	    delete Head;
+	    return box;
+	  }
+	}
+      }else if (Head->getRight()==nullptr){
+	if(Head->getLeft()->isRed){
+	  Node* box = Head->getLeft();
+	  box->isRed=false;
+	  delete Head;
+	  return box;
+	}
+      }
+    }else{
+      Node* box = Head;
+      Head=nullptr;
+      if(box->getParent()==nullptr){
+	delete box;
+	return nullptr;
+      }else if(box->getParent()->{
+	
+      }
+    }
+  }
 }
 
 //recursive node remover
@@ -376,6 +433,14 @@ Node* removeNode(Node* Head,int nodeVal){
     if(Head->getNext()!=nullptr){
       ShiftTillLast(Head);
     }else{
+      if(numberOfKids(Head)<2){
+	return repairTree(Head,Head);
+      }else{
+	Node* box = GetSucessor(Head);
+	SwapInts(Head, box);
+	Head->setRight(removeNode(Head->getRight(),nodeVal));
+      }
+      /*
       if(Head->getLeft()==nullptr){
 	Node* box = Head->getRight();
 	delete Head;
@@ -385,10 +450,11 @@ Node* removeNode(Node* Head,int nodeVal){
 	delete Head;
 	return box;
       }else{
-	Node* box = GetSucessor(Head);
-	SwapInts(Head, box);
+        Node* box = GetSucessor(Head);
+        SwapInts(Head, box);
 	Head->setRight(removeNode(Head->getRight(),nodeVal));
       }
+      */
     }
   }else if((*(Head->getInt()))<nodeVal){
     if(Head->getRight()!=nullptr){
@@ -572,7 +638,6 @@ void rotLeft(Node* & Head,Node* Cur){
   OrigRight->setLeft(Cur);
 }
 
-
 void rotRight(Node* & Head, Node* Cur){
   cout<<"I Am Omegon: "<<*(Cur->getInt())<<endl;
   Node* ParBox=Cur->getParent();
@@ -583,8 +648,7 @@ void rotRight(Node* & Head, Node* Cur){
       ParBox->setRight(OrigLeft);
     }else{
       ParBox->setLeft(OrigLeft);
-    }
-    
+    }   
   }else{  
     Head=OrigLeft;
     Head->setParent(nullptr);
