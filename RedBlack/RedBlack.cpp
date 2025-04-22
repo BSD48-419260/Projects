@@ -393,9 +393,9 @@ Node* repairTree(Node* & Head, Node* Cur){
       return box;
     }
   }else{
-    if(numberOfKids(Head)=1){
+    if(numberOfKids(Head)==1){
       if(Head->getLeft()==nullptr){
-	if(Head->getRight!=nullptr){
+	if(Head->getRight()!=nullptr){
 	  if(Head->getRight()->isRed){
 	    Node* box = Head->getRight();
 	    box->isRed=false;
@@ -417,11 +417,12 @@ Node* repairTree(Node* & Head, Node* Cur){
       if(box->getParent()==nullptr){
 	delete box;
 	return nullptr;
-      }else if(box->getParent()->{
+      }else if(box->getParent()==nullptr){
 	
       }
     }
   }
+  return Head;
 }
 
 //recursive node remover
