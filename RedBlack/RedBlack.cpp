@@ -15,12 +15,14 @@ Node* getUncle(Node* Head);
 Node* getSibling(Node* Head);
 bool isLeft(Node* Head);
 bool isRight(Node* Head);
+bool isRed(Node* Check);
 void addNode(Node* & Head, int ToAdd);
 void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd);
 void handleAddingRedBlack(Node* & Head, Node* ToAdd);
 int numberOfKids(Node* check);
-Node* repairTree(Node* & Head, Node* Cur);
 Node* removeNode(Node* Head, int nodeVal);
+Node* deleteoncefound(Node* toDelete);
+Node* repairTree(Node* Head);
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
 void SwapCol(Node* Head);
@@ -244,6 +246,13 @@ bool isRight(Node* Head){
   return false;
 }
 
+bool isRed(Node* Check){
+  if(Check!=nullptr){
+    return Check->isRed;
+  }
+  return false;
+}
+
 //Adder function preamble
 void addNode(Node* & Head, int ToAdd){
   int Integ;
@@ -381,50 +390,6 @@ int numberOfKids(Node* check){
   return num;
 }
 
-Node* repairTree(Node* & Head, Node* Cur){
-  if(Head->isRed){
-    if(Head->getLeft()==nullptr){
-      Node* box = Head->getRight();
-      delete Head;
-      return box;
-    }else if (Head->getRight()==nullptr){
-      Node* box = Head->getLeft();
-      delete Head;
-      return box;
-    }
-  }else{
-    if(numberOfKids(Head)==1){
-      if(Head->getLeft()==nullptr){
-	if(Head->getRight()!=nullptr){
-	  if(Head->getRight()->isRed){
-	    Node* box = Head->getRight();
-	    box->isRed=false;
-	    delete Head;
-	    return box;
-	  }
-	}
-      }else if (Head->getRight()==nullptr){
-	if(Head->getLeft()->isRed){
-	  Node* box = Head->getLeft();
-	  box->isRed=false;
-	  delete Head;
-	  return box;
-	}
-      }
-    }else{
-      Node* box = Head;
-      Head=nullptr;
-      if(box->getParent()==nullptr){
-	delete box;
-	return nullptr;
-      }else if(box->getParent()==nullptr){
-	
-      }
-    }
-  }
-  return Head;
-}
-
 //recursive node remover
 Node* removeNode(Node* Head,int nodeVal){
   if(Head==nullptr){
@@ -434,8 +399,21 @@ Node* removeNode(Node* Head,int nodeVal){
     if(Head->getNext()!=nullptr){
       ShiftTillLast(Head);
     }else{
+      deleteoncefound(Head);
+      /*
+      if(Head->isRed){
+	if(Head->getLeft()==nullptr){
+	  Node* box = Head->getRight();
+	  delete Head;
+	  return box;
+	}else if (Head->getRight()==nullptr){
+	  Node* box = Head->getLeft();
+	  delete Head;
+	  return box;
+	}
+      }
       if(numberOfKids(Head)<2){
-	return repairTree(Head,Head);
+	return repairTree(Head);
       }else{
 	Node* box = GetSucessor(Head);
 	SwapInts(Head, box);
@@ -455,7 +433,9 @@ Node* removeNode(Node* Head,int nodeVal){
         SwapInts(Head, box);
 	Head->setRight(removeNode(Head->getRight(),nodeVal));
       }
+      * /
       */
+      
     }
   }else if((*(Head->getInt()))<nodeVal){
     if(Head->getRight()!=nullptr){
@@ -473,6 +453,84 @@ Node* removeNode(Node* Head,int nodeVal){
     cout<<"Something Went Wrong. Please try again."<<endl;
   }
   return Head;
+}
+
+Node* deleteoncefound(Node* toDelete){
+  if()
+}
+
+//for this we assume head is black
+Node* repairTree(Node* Head){
+  /*
+  if(numberOfKids(Head)==1){
+    if(Head->getLeft()==nullptr){
+      if(Head->getRight()!=nullptr){
+	if(Head->getRight()->isRed){
+	  Node* box = Head->getRight();
+	  box->isRed=false;
+	  delete Head;
+	  return box;
+	}
+      }
+    }else if (Head->getRight()==nullptr){
+      if(Head->getLeft()->isRed){
+	Node* box = Head->getLeft();
+	box->isRed=false;
+	delete Head;
+	return box;
+      }
+    }
+  }
+  Node* box = Head;
+  Head=nullptr;
+  if(box->getParent()==nullptr){ //case 1
+    delete box;
+    return nullptr;
+  }else if(box->getParent()->isRed==false){
+    if(getSibling(head)->isRed){ //case 2
+      box->getParent->isRed=true;
+      getSibling(head)->isRed=false;
+      if(box->getParent()->getLeft()==box){
+	rotLeft(box->getParent());
+	return repairTree(box);
+      }else{
+	rotRight(box->getParent());
+	return repairTree(box);
+      }
+    }else{
+      if((isRed(getSibling(box)->getLeft()))||(isRed(getSibling(box)->getRight()))){ //case 5 & 6 are mixed
+	if(box->getParent()->getLeft()==box){// isleft cases
+	  if(isRed(box->getParent()->getRight()->getRight())){ //case 6 isleft
+	    box->getParent()->getRight()->getRight()->isRed=false;
+	    rotLeft()
+	  }else{ //case 5 isleft;
+	    box->getParent()->getRight()->getLeft()->isRed=false;
+	    box->getParent()->getRight()->isRed=true;
+	    rotRight(box->getParent()->getRight());
+	    return repairTree(box);
+	  }
+	}else{
+
+	}
+      }else{ //case 3
+	getSibling(box)->isRed=true;
+	box->isRed=false;
+	return repairTree(box->getParent);
+      }
+    }
+  }else{ //case 4
+    if(box->getParent()->getLeft()==box){
+      box->getParent()->getRight()->isRed=true;
+      box->getParent()->isRed=false;
+    }else{
+      box->getParent()->getLeft()->isRed=true;
+      box->getParent()->isRed=false;
+    }
+    delete Head;
+    return box;
+  }
+  return Head;
+  */
 }
 
 //technically I could just delete the last node in the list and get exactly the same result bcos the only variable we have to chain is an int but that's not how it's supposed to be in real life so...
