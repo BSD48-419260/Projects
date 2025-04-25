@@ -28,7 +28,7 @@ Node* repairTree(Node* Head);
 void transplant(Node* & Head, Node* Original, Node* New);
 
 Node* findNode(Node* Head, int nodeVal);
-void removeNode(Node* & Head, Node* & ToDelete);
+void removeNode(Node* & Head, Node* ToDelete);
 Node* repairTree(Node* Head);
 
 void ShiftTillLast(Node* Head);
@@ -569,16 +569,65 @@ Node* findNode(Node* Head, int nodeVal){
     return nullptr;
   }
 }
-void removeNode(Node* & Head, Node* & ToDelete){
+
+void removeNode(Node* & Head, Node* ToDelete){
   if(ToDelete->getNext()!=nullptr){
     ShiftTillLast(Head);
-  }else {
-    
+  }else if(numberOfKids(ToDelete)==0){
+    Node* box = ToDelete;
+    if(isLeft(ToDelete)){
+      box->getParent()->setLeft(nullptr);
+    }else if(isRight(ToDelete)){
+      box->getParent()->setRight(nullptr);
+    }else{
+      Head=nullptr;
+      delete ToDelete;
+      return;
+    }
+    Head=repairTree(box);
+  }else if(numberOfKids(ToDelete)==1){
+    Node* box = ToDelete;
+    if(ToDelete->getLeft()!=nullptr){
+      if(isLeft(ToDelete)){
+	box->getParent()->setLeft(ToDelete->getLeft());
+      }else if(isRight(ToDelete)){
+	box->getParent()->setRight(ToDelete->getLeft());
+      }else{
+	Head=ToDelete->getLeft();
+	delete ToDelete;
+	Head->isRed=false;
+	return;
+      }
+      Head=repairTree(box);
+    }else if(ToDelete->getRight()!=nullptr){
+      if(isLeft(ToDelete)){
+	box->getParent()->setLeft(ToDelete->getRight());
+      }else if(isRight(ToDelete)){
+	box->getParent()->setRight(ToDelete->getRight());
+      }else{
+	Head=ToDelete->getRight();
+	delete ToDelete;
+	Head->isRed=false;
+	return;
+      }
+      Head=repairTree(box);
+    }else{
+      cout<<"A Major Error Has Occured"<<endl;
+    }
+    Head=repairTree(box->getParent);
+  }else if(numberOfKids(ToDelete)==2){
+    Node* successor= ToDelete->getSucessor;
+    SwapInts(ToDelete, sucessor);
+    node* box = successor;
+    Head=repairTree(box);
+  }else{
+    cout<<"A Major Error Has Occured"<<endl;
+    return;
   }
 }
 
 Node* repairTree(Node* Head){
-
+  
 }
 
 //technically I could just delete the last node in the list and get exactly the same result bcos the only variable we have to chain is an int but that's not how it's supposed to be in real life so...
