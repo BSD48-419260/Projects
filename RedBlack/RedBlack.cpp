@@ -23,14 +23,17 @@ int numberOfKids(Node* check);
 /*
 Node* removeNode(Node* Head, int nodeVal);
 Node* deleteoncefound(Node* toDelete);
-Node* repairTree(Node* Head);
+Node* stepTwo(Node* Head);
 */
 void transplant(Node* & Head, Node* Original, Node* New);
 
 Node* findNode(Node* Head, int nodeVal);
 void removeNode(Node* & Head, Node* ToDelete);
-void repairTree(Node* & Head, Node* ToDelete, Node* Replacement, Node* x, bool Nil);
-void ProperFixup();
+void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil);
+void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement);
+void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
+void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
+void doFixup();
 
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
@@ -85,6 +88,7 @@ int main(){
       }else if (strcmp(inpstring,"DELETE")==0){
 	cout<<"To Cancel, Input the number 0"<<endl;
         cout<<"SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALT"<<endl;
+	removeNode(Head, findNode(Head, getInt()));
       }else if (strcmp(inpstring,"SEARCH")==0){
         DetectNumb(Head, getInt(), 0);
       }else if (strcmp(inpstring,"PRINT")==0){
@@ -317,9 +321,6 @@ void addNodeRecursive(Node* & Head, Node* Cur, Node* ToAdd){
 
 
 void handleAddingRedBlack(Node* & Head, Node* ToAdd){
-  cout<<"----------------"<<endl;
-  RecPrint(0,Head);
-  cout<<"----------------"<<endl;
   Head->isRed=false;
   RecolorLineage(Head);
   if(Head!=ToAdd){
@@ -386,6 +387,9 @@ void handleAddingRedBlack(Node* & Head, Node* ToAdd){
 }
 
 int numberOfKids(Node* check){
+  if(check==nullptr){
+    return -1;
+  }
   int num=0;
   if(check->getLeft()!=nullptr){
     num++;
@@ -420,7 +424,7 @@ Node* removeNode(Node* Head,int nodeVal){
 	}
       }
       if(numberOfKids(Head)<2){
-	return repairTree(Head);
+	return stepTwo(Head);
       }else{
 	Node* box = GetSucessor(Head);
 	SwapInts(Head, box);
@@ -465,7 +469,7 @@ Node* removeNode(Node* Head,int nodeVal){
 
 /*
 //for this we assume head is black
-Node* repairTree(Node* Head){
+Node* stepTwo(Node* Head){
   if(numberOfKids(Head)==1){
     if(Head->getLeft()==nullptr){
       if(Head->getRight()!=nullptr){
@@ -496,10 +500,10 @@ Node* repairTree(Node* Head){
       getSibling(head)->isRed=false;
       if(box->getParent()->getLeft()==box){
 	rotLeft(box->getParent());
-	return repairTree(box);
+	return stepTwo(box);
       }else{
 	rotRight(box->getParent());
-	return repairTree(box);
+	return stepTwo(box);
       }
     }else{
       if((isRed(getSibling(box)->getLeft()))||(isRed(getSibling(box)->getRight()))){ //case 5 & 6 are mixed
@@ -511,7 +515,7 @@ Node* repairTree(Node* Head){
 	    box->getParent()->getRight()->getLeft()->isRed=false;
 	    box->getParent()->getRight()->isRed=true;
 	    rotRight(box->getParent()->getRight());
-	    return repairTree(box);
+	    return stepTwo(box);
 	  }
 	}else{
 
@@ -519,7 +523,7 @@ Node* repairTree(Node* Head){
       }else{ //case 3
 	getSibling(box)->isRed=true;
 	box->isRed=false;
-	return repairTree(box->getParent);
+	return stepTwo(box->getParent);
       }
     }
   }else{ //case 4
@@ -579,7 +583,6 @@ void removeNode(Node* & Head, Node* ToDelete){
     Node* Nulby = new Node(-40078);
     if(isLeft(ToDelete)){
       ToDelete->setLeft(Nulby);
-      
     }else if(isRight(ToDelete)){
       ToDelete->setRight(Nulby);
     }else{
@@ -588,51 +591,99 @@ void removeNode(Node* & Head, Node* ToDelete){
       delete Nulby;
       return;
     }
-    repairTree(Head, ToDelete, Nulby, Nulby, true);
+    stepTwo(Head, ToDelete, Nulby, Nulby, true);
   }else if(numberOfKids(ToDelete)==1){
+    Node* box
     if(ToDelete->getLeft()!=nullptr){
-      Node* box = ToDelete->getLeft();
-      if(!(isLeft(ToDelete)||isRight(ToDelete))){
-	Head=ToDelete->getLeft();
-	delete ToDelete;
-	Head->isRed=false;
-	return;
-      }
-      repairTree(Head, ToDelete, box, box, false);
+      box = ToDelete->getLeft();
     }else if(ToDelete->getRight()!=nullptr){
-      Node* box = ToDelete->getRight();
-      if(isLeft(ToDelete)){
-	ToDelete->getParent()->setLeft(ToDelete->getRight());
-      }else if(isRight(ToDelete)){
-	ToDelete->getParent()->setRight(ToDelete->getRight());
-      }else{
-	Head=ToDelete->getRight();
+      box = ToDelete->getRight();
+    }else{
+      cout<<"A Major Error Has Occured: 1 child, not left or right."<<endl;
+      exit(2);
+      return;
+    }
+    if(!(isLeft(ToDelete)||isRight(ToDelete))){
+	Head=box;
 	delete ToDelete;
 	Head->isRed=false;
 	return;
-      }
-      repairTree(Head, ToDelete, box, box, false);
-    }else{
-      cout<<"A Major Error Has Occured"<<endl;
-    }
-    
+     }
+    stepTwo(Head, ToDelete, box, box, false);
   }else if(numberOfKids(ToDelete)==2){
-    Node* successor= ToDelete->getSucessor;
-    SwapInts(ToDelete, sucessor);
-    node* box = successor;
-    repairTree(Head, ToDelete, box, box->getRight, false);
+    stepTwo(Head, ToDelete, getSuccessor(ToDelete), getSuccessor(ToDelete)->getRight, true);
   }else{
-    cout<<"A Major Error Has Occured"<<endl;
+    cout<<"A Major Error Has Occured: Number of children not between 0 and 2"<<endl;
     return;
   }
 }
 
-void repairTree(Node* & Head, Node* ToDelete, Node* Replacement, Node* x, bool Nil){
-
+void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil){
+  if(Nil){
+    delete Replacement;
+    Replacement=nullptr;
+  }
+  if(isLeft(ToDelete)){
+    toDelete->getParent()->setLeft(Replacement);
+  }else if(isRight(ToDelete)){
+    toDelete->getParent()->setRight(Replacement);
+  }else{
+    cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
+  }
+  delete toDelete;
+  return;
 }
 
-void ProperFixup(){
+void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
+  SwapInts(ToDelete, Replacement);  
+  if(isLeft(Replacement)){
+    toDelete->getParent()->setLeft(Replacement->getRight());
+  }else if(isRight(Replacement)){
+    toDelete->getParent()->setRight(Replacement->getRight());
+  }else{
+    cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
+  }
+  delete Replacement;
+  return;
+}
 
+//FIGures out which DELETE to use
+void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
+  if(Replacement==x){
+    normDelete(Head, toDelete, Replacement, Nil);
+  }else{
+    twokidDelete(Head, toDelete, Replacement);
+  }
+}
+
+void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
+  if(ToDelete->isRed){
+    if(Nil||(Replacement->isRed)){
+      figDelete(Head, ToDelete, Replacement, x, Nil);
+      return;
+    }else{
+      Replacement->isRed = true;
+      doFixup();
+    }
+  }else{
+    if(Replacement->isRed){
+      Replacement->isRed=false;
+      figDelete(Head, ToDelete, Replacement, x, Nil);
+      return;
+    }else{
+      if(x==Head){
+        figDelete(Head, ToDelete, Replacement, x, Nil);
+	return;
+      }else{
+	doFixup();
+      }
+    }
+  }
+}
+
+//whoo boy it's time to get COMPLICATED!
+void doFixup(){
+ 
 }
 
 //technically I could just delete the last node in the list and get exactly the same result bcos the only variable we have to chain is an int but that's not how it's supposed to be in real life so...
