@@ -580,7 +580,7 @@ void removeNode(Node* & Head, Node* ToDelete){
     ShiftTillLast(Head);
   }else if(numberOfKids(ToDelete)==0){
     ToDelete;
-    Node* Nulby = new Node(-40078);
+    Node* Nulby = new Node(-314159265);
     if(isLeft(ToDelete)){
       ToDelete->setLeft(Nulby);
     }else if(isRight(ToDelete)){
@@ -682,7 +682,7 @@ void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil)
 }
 
 //whoo boy it's time to get COMPLICATED!
-void doFixup(){
+void doFixup(Node* x){
  
 }
 
