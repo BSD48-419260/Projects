@@ -28,8 +28,9 @@ Node* repairTree(Node* Head);
 void transplant(Node* & Head, Node* Original, Node* New);
 
 Node* findNode(Node* Head, int nodeVal);
-void removeNode(Node* & Head, Node* & ToDelete);
-Node* repairTree(Node* Head);
+void removeNode(Node* & Head, Node* ToDelete);
+void repairTree(Node* & Head, Node* ToDelete, Node* Replacement, Node* x, bool Nil);
+void ProperFixup();
 
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
@@ -83,7 +84,7 @@ int main(){
 	addFromFile(Head);
       }else if (strcmp(inpstring,"DELETE")==0){
 	cout<<"To Cancel, Input the number 0"<<endl;
-        cout<<"SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALT"<<endl;
+        cout<<"SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALT"<<endl;
       }else if (strcmp(inpstring,"SEARCH")==0){
         DetectNumb(Head, getInt(), 0);
       }else if (strcmp(inpstring,"PRINT")==0){
@@ -460,10 +461,11 @@ Node* removeNode(Node* Head,int nodeVal){
   }
   return Head;
 }
+*/
 
+/*
 //for this we assume head is black
 Node* repairTree(Node* Head){
-  /*
   if(numberOfKids(Head)==1){
     if(Head->getLeft()==nullptr){
       if(Head->getRight()!=nullptr){
@@ -532,9 +534,8 @@ Node* repairTree(Node* Head){
     return box;
   }
   return Head;
-  * /
 }
-*/
+//*/
 
 void transplant(Node* & Head, Node* Original, Node* New){
   if(Original->getParent()==nullptr){
@@ -569,15 +570,68 @@ Node* findNode(Node* Head, int nodeVal){
     return nullptr;
   }
 }
-void removeNode(Node* & Head, Node* & ToDelete){
+
+void removeNode(Node* & Head, Node* ToDelete){
   if(ToDelete->getNext()!=nullptr){
     ShiftTillLast(Head);
-  }else {
+  }else if(numberOfKids(ToDelete)==0){
+    ToDelete;
+    Node* Nulby = new Node(-40078);
+    if(isLeft(ToDelete)){
+      ToDelete->setLeft(Nulby);
+      
+    }else if(isRight(ToDelete)){
+      ToDelete->setRight(Nulby);
+    }else{
+      Head=nullptr;
+      delete ToDelete;
+      delete Nulby;
+      return;
+    }
+    repairTree(Head, ToDelete, Nulby, Nulby, true);
+  }else if(numberOfKids(ToDelete)==1){
+    if(ToDelete->getLeft()!=nullptr){
+      Node* box = ToDelete->getLeft();
+      if(!(isLeft(ToDelete)||isRight(ToDelete))){
+	Head=ToDelete->getLeft();
+	delete ToDelete;
+	Head->isRed=false;
+	return;
+      }
+      repairTree(Head, ToDelete, box, box, false);
+    }else if(ToDelete->getRight()!=nullptr){
+      Node* box = ToDelete->getRight();
+      if(isLeft(ToDelete)){
+	ToDelete->getParent()->setLeft(ToDelete->getRight());
+      }else if(isRight(ToDelete)){
+	ToDelete->getParent()->setRight(ToDelete->getRight());
+      }else{
+	Head=ToDelete->getRight();
+	delete ToDelete;
+	Head->isRed=false;
+	return;
+      }
+      repairTree(Head, ToDelete, box, box, false);
+    }else{
+      cout<<"A Major Error Has Occured"<<endl;
+    }
     
+  }else if(numberOfKids(ToDelete)==2){
+    Node* successor= ToDelete->getSucessor;
+    SwapInts(ToDelete, sucessor);
+    node* box = successor;
+    repairTree(Head, ToDelete, box, box->getRight, false);
+  }else{
+    cout<<"A Major Error Has Occured"<<endl;
+    return;
   }
 }
 
-Node* repairTree(Node* Head){
+void repairTree(Node* & Head, Node* ToDelete, Node* Replacement, Node* x, bool Nil){
+
+}
+
+void ProperFixup(){
 
 }
 
