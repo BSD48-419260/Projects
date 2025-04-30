@@ -33,7 +33,7 @@ void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil);
 void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement);
 void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
 void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
-void doFixup();
+void doFixup(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
 
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
@@ -682,8 +682,31 @@ void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil)
 }
 
 //whoo boy it's time to get COMPLICATED!
-void doFixup(Node* x){
- 
+void doFixup(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
+  if(isRed(x)){ //case 0
+
+  }else{
+    Node* w=getSibling(x);
+    if(w->isRed){ //case 1
+      
+    }else{
+      int redkidcount=0;
+      if(isRed(w->getLeft)){
+	redkidcount++;
+      }
+      if(isRed(w->getRight)){
+	redkidcount++;
+      }
+      if(redkidcount==0){ //case 2
+
+      }else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
+	
+      }else{ //case 3
+
+      }
+    }
+
+  }
 }
 
 //technically I could just delete the last node in the list and get exactly the same result bcos the only variable we have to chain is an int but that's not how it's supposed to be in real life so...
