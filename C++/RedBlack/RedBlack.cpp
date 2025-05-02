@@ -541,7 +541,7 @@ void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil)
     xNil=true;
     tost = new int(-314159265);
     Nulby = new Node(tost);
-    replacement->setRight(Nulby);
+    Replacement->setRight(Nulby);
     x=Nulby;
   }
   RecPrint(0, Head);
@@ -590,7 +590,7 @@ void doFixup(Node* & Head, Node* x,bool xNil){
       tost = new int(-314159265);
       Nulby = new Node(tost);
       w=Nulby;
-      cout<<"HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEECK!"<<;
+      cout<<"HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEECK!"<<endl;
     }
     while(true){
       if(w->isRed){ //case 1
@@ -639,6 +639,16 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	  }else{
 	    cout<<"ERROR! SEC: CASE 4 ERR: X IS NOT LEFT OR RIGHT"<<endl;
 	    exit(4);
+	  }
+	  if(xNil){
+	    if(isLeft(x)){
+	      x->getParent()->setLeft(nullptr);
+	    }else if(isRight(x)){
+	      x->getParent()->setRight(nullptr);
+	    }else{
+	      cout<<"Crabs."<<endl;
+	    }
+	    delete x;
 	  }
 	  return;
 	}else{ //case 3
