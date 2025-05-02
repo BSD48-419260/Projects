@@ -33,13 +33,13 @@ void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil);
 void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement);
 void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
 void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
-void doFixup(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
+void doFixup(Node* & Head, Node* x, bool xNil);
 
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
 void SwapCol(Node* Head);
 void SwapNodes(Node* One, Node* Two);
-Node* GetSucessor(Node* Cur);
+Node* GetSuccessor(Node* Cur);
 Node* getLastLeft(Node* Cur);
 int getInt();
 void DetectNumb(Node* Cur, int Check, int Depth);
@@ -400,147 +400,6 @@ int numberOfKids(Node* check){
   return num;
 }
 
-/*
-//recursive node remover
-Node* removeNode(Node* Head,int nodeVal){
-  if(Head==nullptr){
-    cout<<"ERROR! Head may be empty"<<endl;
-    return nullptr;
-  }else if((*(Head->getInt()))==nodeVal){
-    if(Head->getNext()!=nullptr){
-      ShiftTillLast(Head);
-    }else{
-      deleteoncefound(Head);
-      /*
-      if(Head->isRed){
-	if(Head->getLeft()==nullptr){
-	  Node* box = Head->getRight();
-	  delete Head;
-	  return box;
-	}else if (Head->getRight()==nullptr){
-	  Node* box = Head->getLeft();
-	  delete Head;
-	  return box;
-	}
-      }
-      if(numberOfKids(Head)<2){
-	return stepTwo(Head);
-      }else{
-	Node* box = GetSucessor(Head);
-	SwapNodes(Head, box);
-	Head->setRight(removeNode(Head->getRight(),nodeVal));
-      }
-      /*
-      if(Head->getLeft()==nullptr){
-	Node* box = Head->getRight();
-	delete Head;
-	return box;
-      }else if (Head->getRight()==nullptr){
-	Node* box = Head->getLeft();
-	delete Head;
-	return box;
-      }else{
-        Node* box = GetSucessor(Head);
-        SwapNodes(Head, box);
-	Head->setRight(removeNode(Head->getRight(),nodeVal));
-      }
-      * /
-      * / 
-      
-    }
-  }else if((*(Head->getInt()))<nodeVal){
-    if(Head->getRight()!=nullptr){
-      Head->setRight(removeNode(Head->getRight(), nodeVal));
-    }else{
-      cout<<"There is no Node with that value."<<endl;
-    }
-  }else if((*(Head->getInt()))>nodeVal){
-    if(Head->getLeft()!=nullptr){
-      Head->setLeft(removeNode(Head->getLeft(), nodeVal));
-    }else{
-      cout<<"There is no Node with that value."<<endl;
-    }
-  }else{
-    cout<<"Something Went Wrong. Please try again."<<endl;
-  }
-  return Head;
-}
-*/
-
-/*
-//for this we assume head is black
-Node* stepTwo(Node* Head){
-  if(numberOfKids(Head)==1){
-    if(Head->getLeft()==nullptr){
-      if(Head->getRight()!=nullptr){
-	if(Head->getRight()->isRed){
-	  Node* box = Head->getRight();
-	  box->isRed=false;
-	  delete Head;
-	  return box;
-	}
-      }
-    }else if (Head->getRight()==nullptr){
-      if(Head->getLeft()->isRed){
-	Node* box = Head->getLeft();
-	box->isRed=false;
-	delete Head;
-	return box;
-      }
-    }
-  }
-  Node* box = Head;
-  Head=nullptr;
-  if(box->getParent()==nullptr){ //case 1
-    delete box;
-    return nullptr;
-  }else if(box->getParent()->isRed==false){
-    if(getSibling(head)->isRed){ //case 2
-      box->getParent->isRed=true;
-      getSibling(head)->isRed=false;
-      if(box->getParent()->getLeft()==box){
-	rotLeft(box->getParent());
-	return stepTwo(box);
-      }else{
-	rotRight(box->getParent());
-	return stepTwo(box);
-      }
-    }else{
-      if((isRed(getSibling(box)->getLeft()))||(isRed(getSibling(box)->getRight()))){ //case 5 & 6 are mixed
-	if(box->getParent()->getLeft()==box){// isleft cases
-	  if(isRed(box->getParent()->getRight()->getRight())){ //case 6 isleft
-	    box->getParent()->getRight()->getRight()->isRed=false;
-	    rotLeft()
-	  }else{ //case 5 isleft;
-	    box->getParent()->getRight()->getLeft()->isRed=false;
-	    box->getParent()->getRight()->isRed=true;
-	    rotRight(box->getParent()->getRight());
-	    return stepTwo(box);
-	  }
-	}else{
-
-	}
-      }else{ //case 3
-	getSibling(box)->isRed=true;
-	box->isRed=false;
-	return stepTwo(box->getParent);
-      }
-    }
-  }else{ //case 4
-    if(box->getParent()->getLeft()==box){
-      box->getParent()->getRight()->isRed=true;
-      box->getParent()->isRed=false;
-    }else{
-      box->getParent()->getLeft()->isRed=true;
-      box->getParent()->isRed=false;
-    }
-    delete Head;
-    return box;
-  }
-  return Head;
-}
-//*/
-
 void transplant(Node* & Head, Node* Original, Node* New){
   if(Original->getParent()==nullptr){
     Head=New;
@@ -562,12 +421,14 @@ Node* findNode(Node* Head, int nodeVal){
       return findNode(Head->getRight(), nodeVal);
     }else{
       cout<<"There is no Node with that value."<<endl;
+      return nullptr;
     }
   }else if((*(Head->getInt()))>nodeVal){
     if(Head->getLeft()!=nullptr){
       return findNode(Head->getLeft(), nodeVal);
     }else{
       cout<<"There is no Node with that value."<<endl;
+      return nullptr;
     }
   }else{
     cout<<"Something Went Wrong. Please try again."<<endl;
@@ -575,43 +436,47 @@ Node* findNode(Node* Head, int nodeVal){
   }
 }
 
-void removeNode(Node* & Head, Node* ToDelete){
-  if(ToDelete->getNext()!=nullptr){
+void removeNode(Node* & Head, Node* toDelete){
+  if(toDelete==nullptr){
+    return;
+  }
+  if(toDelete->getNext()!=nullptr){
     ShiftTillLast(Head);
-  }else if(numberOfKids(ToDelete)==0){
-    ToDelete;
-    Node* Nulby = new Node(-314159265);
-    if(isLeft(ToDelete)){
-      ToDelete->setLeft(Nulby);
-    }else if(isRight(ToDelete)){
-      ToDelete->setRight(Nulby);
+  }else if(numberOfKids(toDelete)==0){
+    toDelete;
+    int* tost = new int(-314159265);
+    Node* Nulby = new Node(tost);
+    if(isLeft(toDelete)){
+      toDelete->setLeft(Nulby);
+    }else if(isRight(toDelete)){
+      toDelete->setRight(Nulby);
     }else{
       Head=nullptr;
-      delete ToDelete;
+      delete toDelete;
       delete Nulby;
       return;
     }
-    stepTwo(Head, ToDelete, Nulby, Nulby, true);
-  }else if(numberOfKids(ToDelete)==1){
-    Node* box
-    if(ToDelete->getLeft()!=nullptr){
-      box = ToDelete->getLeft();
-    }else if(ToDelete->getRight()!=nullptr){
-      box = ToDelete->getRight();
+    stepTwo(Head, toDelete, Nulby, Nulby, true);
+  }else if(numberOfKids(toDelete)==1){
+    Node* box;
+    if(toDelete->getLeft()!=nullptr){
+      box = toDelete->getLeft();
+    }else if(toDelete->getRight()!=nullptr){
+      box = toDelete->getRight();
     }else{
       cout<<"A Major Error Has Occured: 1 child, not left or right."<<endl;
       exit(2);
       return;
     }
-    if(!(isLeft(ToDelete)||isRight(ToDelete))){
+    if(!(isLeft(toDelete)||isRight(toDelete))){
 	Head=box;
-	delete ToDelete;
+	delete toDelete;
 	Head->isRed=false;
 	return;
      }
-    stepTwo(Head, ToDelete, box, box, false);
-  }else if(numberOfKids(ToDelete)==2){
-    stepTwo(Head, ToDelete, getSuccessor(ToDelete), getSuccessor(ToDelete)->getRight, true);
+    stepTwo(Head, toDelete, box, box, false);
+  }else if(numberOfKids(toDelete)==2){
+    stepTwo(Head, toDelete, GetSuccessor(toDelete), GetSuccessor(toDelete)->getRight(), false);
   }else{
     cout<<"A Major Error Has Occured: Number of children not between 0 and 2"<<endl;
     return;
@@ -623,9 +488,9 @@ void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil){
     delete Replacement;
     Replacement=nullptr;
   }
-  if(isLeft(ToDelete)){
+  if(isLeft(toDelete)){
     toDelete->getParent()->setLeft(Replacement);
-  }else if(isRight(ToDelete)){
+  }else if(isRight(toDelete)){
     toDelete->getParent()->setRight(Replacement);
   }else{
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
@@ -644,18 +509,18 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   //Makes Replacement take ToDelete's place as ToDelete's parent's kid.
-  if(isLeft(ToDelete)){
-    ToDelete->getParent()->setLeft(Replacement);
-  }else if(isRight(ToDelete)){
-    ToDelete->getParent()->setRight(Replacement);
+  if(isLeft(toDelete)){
+    toDelete->getParent()->setLeft(Replacement);
+  }else if(isRight(toDelete)){
+    toDelete->getParent()->setRight(Replacement);
   }else{
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   //Gives Replacement ToDelete's Kids
-  Replacement->setLeft(ToDelete->getLeft());
-  Replacement->setRight(ToDelete->getRight());
+  Replacement->setLeft(toDelete->getLeft());
+  Replacement->setRight(toDelete->getRight());
   //Takes ToDelete out behind the shed and fires a double barrel shotgun into their skull.
-  delete ToDelete;
+  delete toDelete;
   return;
 }
 
@@ -669,60 +534,91 @@ void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Ni
 }
 
 void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
-  if(ToDelete->isRed){
+  bool xNil=false;
+  int* tost;
+  Node* Nulby;
+  if(x==nullptr){
+    xNil=true;
+    tost = new int(-314159265);
+    Nulby = new Node(tost);
+    replacement->setRight(Nulby);
+    x=Nulby;
+  }
+  RecPrint(0, Head);
+  if(toDelete->isRed){
     if(Nil||(Replacement->isRed)){
-      figDelete(Head, ToDelete, Replacement, x, Nil);
+      figDelete(Head, toDelete, Replacement, x, Nil);
       return;
     }else{
       Replacement->isRed = true;
-      figDelete(Head, ToDelete, Replacement, x, Nil);
-      doFixup();
+      figDelete(Head, toDelete, Replacement, x, Nil);
+      doFixup(Head, x, xNil);
     }
   }else{
     if(Replacement->isRed){
       Replacement->isRed=false;
-      figDelete(Head, ToDelete, Replacement, x, Nil);
+      figDelete(Head, toDelete, Replacement, x, Nil);
       return;
     }else{
       if(x==Head){
-        figDelete(Head, ToDelete, Replacement, x, Nil);
+        figDelete(Head, toDelete, Replacement, x, Nil);
 	return;
       }else{
-	figDelete(Head, ToDelete, Replacement, x, Nil);
-	doFixup();
+	figDelete(Head, toDelete, Replacement, x, Nil);
+	doFixup(Head, x,xNil);
       }
     }
   }
 }
 
 //whoo boy it's time to get COMPLICATED!
-void doFixup(Node* & Head, Node* x){
+void doFixup(Node* & Head, Node* x,bool xNil){
+  bool wNil=false;
+  int* tost;
+  Node* Nulby;
+  RecPrint(0,Head);
+  /*if(x==nullptr){
+    return;
+  }*/
   if(isRed(x)){ //case 0
     x->isRed=false;
     return;
   }else{
     Node* w=getSibling(x);
+    if(w==nullptr){
+      wNil=true;
+      tost = new int(-314159265);
+      Nulby = new Node(tost);
+      w=Nulby;
+      cout<<"HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEECK!"<<;
+    }
     while(true){
       if(w->isRed){ //case 1
 	w->isRed=false;
 	x->getParent()->isRed=true;
 	if(isLeft(x)){
-	  rotLeft(x->getParent());
+	  rotLeft(Head, x->getParent());
 	}else{
-	  rotRight(x->getParent());
+	  rotRight(Head, x->getParent());
 	}
         w=getSibling(x);
       }else{
 	int redkidcount=0;
-	if(isRed(w->getLeft)){
+	if(isRed(w->getLeft())){
 	  redkidcount++;
 	}
-	if(isRed(w->getRight)){
+	if(isRed(w->getRight())){
 	  redkidcount++;
 	}
 	if(redkidcount==0){ //case 2
 	  w->isRed=true;
-	  x=x->getParent();
+	  if(xNil){
+	    Node* box = x->getParent();
+	    delete x;
+	    x=box;
+	  }else{
+	    x=x->getParent();
+	  }
 	  if(x->isRed){
 	    x->isRed=false;
 	    return;
@@ -733,26 +629,27 @@ void doFixup(Node* & Head, Node* x){
 	  w=getSibling(x);
 	}else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
 	  w->isRed=x->getParent()->isRed;
-	  x->getParent->isRed=false;
+	  x->getParent()->isRed=false;
 	  if(isLeft(x)){
 	    w->getRight()->isRed=false;
-	    rotLeft(x->getParent());
+	    rotLeft(Head, x->getParent());
 	  }else if(isRight(x)){
-	    w->getleft()->isRed=false;
-	    rotRight(x->getParent());
+	    w->getLeft()->isRed=false;
+	    rotRight(Head, x->getParent());
 	  }else{
-	    cout<<"ERROR! SEC: CASE 4 ERR: X IS NOT LEFT OR RIGHT"
+	    cout<<"ERROR! SEC: CASE 4 ERR: X IS NOT LEFT OR RIGHT"<<endl;
+	    exit(4);
 	  }
 	  return;
 	}else{ //case 3
 	  w->isRed=true;
 	  if (isLeft(x)){
 	    w->getLeft()->isRed=false;
-	    rotRight(w);
+	    rotRight(Head, w);
 	    w=getSibling(x);
 	  }else if (isRight(x)){
 	    w->getRight()->isRed=false;
-	    rotLeft(w);
+	    rotLeft(Head, w);
 	    w=getSibling(x);
 	  }else{
 	    cout<<"ERROR! SEC: CASE 3 ERR:X IS ROOT."<<endl;
@@ -839,7 +736,7 @@ void SwapNodes(Node* One, Node* Two){
 }
 
 //Successor Getter
-Node* GetSucessor(Node* Cur){
+Node* GetSuccessor(Node* Cur){
   return getLastLeft(Cur->getRight()); 
 }
 
