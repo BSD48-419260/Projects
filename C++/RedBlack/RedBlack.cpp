@@ -732,9 +732,32 @@ void doFixup(Node* & Head, Node* x){
 	  }
 	  w=getSibling(x);
 	}else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
-	  
+	  w->isRed=x->getParent()->isRed;
+	  x->getParent->isRed=false;
+	  if(isLeft(x)){
+	    w->getRight()->isRed=false;
+	    rotLeft(x->getParent());
+	  }else if(isRight(x)){
+	    w->getleft()->isRed=false;
+	    rotRight(x->getParent());
+	  }else{
+	    cout<<"ERROR! SEC: CASE 4 ERR: X IS NOT LEFT OR RIGHT"
+	  }
+	  return;
 	}else{ //case 3
-	  
+	  w->isRed=true;
+	  if (isLeft(x)){
+	    w->getLeft()->isRed=false;
+	    rotRight(w);
+	    w=getSibling(x);
+	  }else if (isRight(x)){
+	    w->getRight()->isRed=false;
+	    rotLeft(w);
+	    w=getSibling(x);
+	  }else{
+	    cout<<"ERROR! SEC: CASE 3 ERR:X IS ROOT."<<endl;
+	    exit(3);
+	  }
 	}
       }
     }
