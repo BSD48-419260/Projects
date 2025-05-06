@@ -29,11 +29,12 @@ void transplant(Node* & Head, Node* Original, Node* New);
 
 Node* findNode(Node* Head, int nodeVal);
 void removeNode(Node* & Head, Node* ToDelete);
-void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil);
+void normDelete(Node* & Head, Node* toDelete, Node* Replacement);
 void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement);
-void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
-void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil);
-void doFixup(Node* & Head, Node* x, bool xNil);
+void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x);
+void NullWipedown(Node* & Head, Node* Replacment, Node* x);
+void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x);
+void doFixup(Node* & Head, Node* x);
 
 void ShiftTillLast(Node* Head);
 void RecolorLineage(Node* Head);
@@ -278,11 +279,15 @@ void addNode(Node* & Head, int ToAdd){
 	  cin.clear();
 	  cin.ignore(100000,'\n');
       }else{
-	if(Head!=nullptr){
-	  addNodeRecursive(Head, Head, new Node(new int(Integ)));
+	if(Integ!=0){
+	  if(Head!=nullptr){
+	    addNodeRecursive(Head, Head, new Node(new int(Integ)));
+	  }else{
+	    Head = new Node(new int(Integ));
+	  }
 	}else{
-	  Head = new Node(new int(Integ));
-	}
+	  cout<<"No node may contain 0"<<endl;
+	 }
 	acin=true;
       }
     }
@@ -444,7 +449,7 @@ void removeNode(Node* & Head, Node* toDelete){
     ShiftTillLast(Head);
   }else if(numberOfKids(toDelete)==0){
     toDelete;
-    int* tost = new int(-314159265);
+    int* tost = new int(0);
     Node* Nulby = new Node(tost);
     if(isLeft(toDelete)){
       toDelete->setLeft(Nulby);
@@ -456,7 +461,7 @@ void removeNode(Node* & Head, Node* toDelete){
       delete Nulby;
       return;
     }
-    stepTwo(Head, toDelete, Nulby, Nulby, true);
+    stepTwo(Head, toDelete, Nulby, Nulby);
   }else if(numberOfKids(toDelete)==1){
     Node* box;
     if(toDelete->getLeft()!=nullptr){
@@ -474,20 +479,24 @@ void removeNode(Node* & Head, Node* toDelete){
 	Head->isRed=false;
 	return;
      }
-    stepTwo(Head, toDelete, box, box, false);
+    stepTwo(Head, toDelete, box, box);
   }else if(numberOfKids(toDelete)==2){
-    stepTwo(Head, toDelete, GetSuccessor(toDelete), GetSuccessor(toDelete)->getRight(), false);
+    int* tost;
+    Node* Nulby =GetSuccessor(toDelete)->getRight();
+    bool isNil = false;
+    if(Nulby==nullptr){
+      tost = new int(0);
+      Nulby = new Node(tost);
+      GetSuccessor(toDelete)->setRight(Nulby);
+    }
+    stepTwo(Head, toDelete, GetSuccessor(toDelete), Nulby);
   }else{
     cout<<"A Major Error Has Occured: Number of children not between 0 and 2"<<endl;
     return;
   }
 }
 
-void normDelete(Node* & Head, Node* toDelete, Node* Replacement, bool Nil){
-  if(Nil){
-    delete Replacement;
-    Replacement=nullptr;
-  }
+void normDelete(Node* & Head, Node* toDelete, Node* Replacement){
   if(isLeft(toDelete)){
     toDelete->getParent()->setLeft(Replacement);
   }else if(isRight(toDelete)){
@@ -525,55 +534,76 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
 }
 
 //FIGures out which DELETE to use
-void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
+void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
   if(Replacement==x){
-    normDelete(Head, toDelete, Replacement, Nil);
+    normDelete(Head, toDelete, Replacement);
   }else{
     twokidDelete(Head, toDelete, Replacement);
   }
 }
 
-void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x, bool Nil){
-  bool xNil=false;
-  int* tost;
-  Node* Nulby;
-  if(x==nullptr){
-    xNil=true;
-    tost = new int(-314159265);
-    Nulby = new Node(tost);
-    Replacement->setRight(Nulby);
-    x=Nulby;
+void NullWipedown(Node* & Head, Node* Replacement, Node* x){
+  cout<<"I AM GOING TO KILL THE QUEEN OF ENGLAND"<<endl;
+  cout<<"R: "<<*(Replacement->getInt())<<" x: "<<*(x->getInt())<<endl;
+  if(Replacement!=nullptr){
+    if(*(Replacement->getInt())==0){
+      if(isLeft(Replacement)){
+	Replacement->getParent()->setLeft(nullptr);
+      }else if(isRight(Replacement)){
+	Replacement->getParent()->setRight(nullptr);
+      }else{
+	Head=nullptr;
+      }
+      delete Replacement;
+    }
   }
+  if(*(x->getInt())==0){
+    if(isLeft(x)){
+      x->getParent()->setLeft(nullptr);
+    }else if (isRight(x)){
+      x->getParent()->setRight(nullptr);
+    }else{
+      Head=nullptr;
+    }
+    delete x;
+  }
+}
+
+void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
+  cout<<"StepTwo"<<endl;
   RecPrint(0, Head);
   if(toDelete->isRed){
-    if(Nil||(Replacement->isRed)){
-      figDelete(Head, toDelete, Replacement, x, Nil);
+    if((*(Replacement->getInt())==0)||(Replacement->isRed)){
+      figDelete(Head, toDelete, Replacement, x);
+      NullWipedown(Head, Replacement, x);
       return;
     }else{
       Replacement->isRed = true;
-      figDelete(Head, toDelete, Replacement, x, Nil);
-      doFixup(Head, x, xNil);
+      figDelete(Head, toDelete, Replacement, x);
+      doFixup(Head, x);
     }
   }else{
     if(Replacement->isRed){
       Replacement->isRed=false;
-      figDelete(Head, toDelete, Replacement, x, Nil);
+      figDelete(Head, toDelete, Replacement, x);
+      NullWipedown(Head, Replacement, x);
       return;
     }else{
       if(x==Head){
-        figDelete(Head, toDelete, Replacement, x, Nil);
+        figDelete(Head, toDelete, Replacement, x);
+        NullWipedown(Head, Replacement, x);
 	return;
       }else{
-	figDelete(Head, toDelete, Replacement, x, Nil);
-	doFixup(Head, x,xNil);
+	figDelete(Head, toDelete, Replacement, x);
+	doFixup(Head, x);
       }
     }
   }
 }
 
 //whoo boy it's time to get COMPLICATED!
-void doFixup(Node* & Head, Node* x,bool xNil){
-  bool wNil=false;
+void doFixup(Node* & Head, Node* x){
+  cout<<"x: "<<x->getInt()<<endl;
   int* tost;
   Node* Nulby;
   RecPrint(0,Head);
@@ -586,13 +616,18 @@ void doFixup(Node* & Head, Node* x,bool xNil){
   }else{
     Node* w=getSibling(x);
     if(w==nullptr){
-      wNil=true;
-      tost = new int(-314159265);
+      tost = new int(0);
       Nulby = new Node(tost);
+      if(isLeft(x)){
+	x->getParent()->setRight(Nulby);
+      }else{
+	x->getParent()->setLeft(Nulby);
+      }
       w=Nulby;
-      cout<<"HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEECK!"<<endl;
+      cout<<"FRANK"<<endl;
     }
     while(true){
+      cout<<"C1"<<endl;
       if(w->isRed){ //case 1
 	w->isRed=false;
 	x->getParent()->isRed=true;
@@ -602,6 +637,18 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	  rotRight(Head, x->getParent());
 	}
         w=getSibling(x);
+	if(w==nullptr){
+	  tost = new int(0);
+	  Nulby = new Node(tost);
+	  if(isLeft(x)){
+	    x->getParent()->setRight(Nulby);
+	  }else{
+	    x->getParent()->setLeft(Nulby);
+	  }
+	  w=Nulby;
+	  cout<<"TOBIAS"<<endl;
+	}
+	
       }else{
 	int redkidcount=0;
 	if(isRed(w->getLeft())){
@@ -611,8 +658,9 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	  redkidcount++;
 	}
 	if(redkidcount==0){ //case 2
+	  cout<<"C2"<<endl;
 	  w->isRed=true;
-	  if(xNil){
+	  if(*(x->getInt())==0){
 	    Node* box = x->getParent();
 	    delete x;
 	    x=box;
@@ -628,6 +676,8 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	  }
 	  w=getSibling(x);
 	}else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
+	  cout<<"C4"<<endl;
+	  cout<<x->getInt()<<endl;
 	  w->isRed=x->getParent()->isRed;
 	  x->getParent()->isRed=false;
 	  if(isLeft(x)){
@@ -640,7 +690,7 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	    cout<<"ERROR! SEC: CASE 4 ERR: X IS NOT LEFT OR RIGHT"<<endl;
 	    exit(4);
 	  }
-	  if(xNil){
+	  if(*(x->getInt())==0){
 	    if(isLeft(x)){
 	      x->getParent()->setLeft(nullptr);
 	    }else if(isRight(x)){
@@ -652,6 +702,7 @@ void doFixup(Node* & Head, Node* x,bool xNil){
 	  }
 	  return;
 	}else{ //case 3
+	  cout<<"C3"<<endl;
 	  w->isRed=true;
 	  if (isLeft(x)){
 	    w->getLeft()->isRed=false;
