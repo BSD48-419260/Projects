@@ -1,23 +1,23 @@
 #include<iostream>
 #include<cstring>
+#include<cctype>
+#include<cmath>
+#include<cfloat>
 using namespace std;
 
 void getStringFromInput(char* inpstring);
 int getIndexOfLastNonNullChar(char* inpstring, int length);
 void HexToBin(bool* bindump);
 void BinToHex(bool* bindump, char* hex);
-float FreqCheck(char* sequence);
+double FreqCheck(char* sequence);
+void boolIncrement(bool* numb, int len);
 
 int main(){
-  char* bob =nullptr;
-  FreqCheck(bob);
-
-  /*
   //prepare bindump
   bool* bindumpA = new bool[403];
-  bool* bindumpB = new bool[403];
+  //bool* bindumpB = new bool[403];
   HexToBin(bindumpA);
-  HexToBin(bindumpB);
+  //HexToBin(bindumpB);
   
   for(int i=0; i<403; i++){
     cout<<bindumpA[i];
@@ -25,19 +25,117 @@ int main(){
   cout<<endl;
 
   for(int i=0; i<403; i++){
+    cout<<bindumpA[402-i];
+  }
+  cout<<endl;
+  /*
+  for(int i=0; i<403; i++){
     cout<<bindumpB[i];
   }
   cout<<endl;
+  */
+  
   bool* xordump = new bool[403];
+  bool* key = new bool[8];
+  for(int i=0; i<8; i++){
+    key[i]=0;
+  }
 
-  for(int i=0; i<403; i++){
-    if(bindumpA[i]==bindumpB[i]){
-      xordump[i]=0;
-    }else{
-      xordump[i]=1;
+  bool notdone=true;
+  int g=0;
+  //buffer that holds sequence
+  char* sequence = new char[51];
+  //box to hold best values
+  char** sequences = new char*[10];
+  for(int i=0; i<10; i+=){
+    sequences[i] = new char[51];
+  }
+  double* values = new double[10];
+
+  for (int i=0; i<10; i++){
+    values[i]=DBL_MAX;
+    for(int j=0; j<51; j++){
+      sequences[i][j]='\0';
     }
   }
+
+  //actual translation setup
+  while(notdone){
+    for(int i=0; i<403; i++){
+      if(bindumpA[i]==key[i%8]){
+	xordump[i]=0;
+      }else{
+	xordump[i]=1;
+      }
+    }
+    cout<<"Decimal value of Key: "<<g<<endl;
+    cout<<"Binary value of Key: ";
+    for(int i=0; i<8; i++){
+      cout<<key[i];
+    }
+    cout<<endl;
+    cout<<endl;
+    for(int i=0; i<403; i++){
+      cout<<xordump[i];
+    }
+    cout<<endl;
+    
+    for(int i=0; i<403; i++){
+      cout<<xordump[402-i];
+    }
+    cout<<endl;
+
+    for(int i=0; i<51; i++){
+      sequence[i]=='\0';
+    }
+    for(int i=0; i<50; i++){
+      int bindex=0;
+      if(xordump[8*i]){
+	bindex=bindex+1;
+      }
+      if(xordump[8*i+1]){
+	bindex=bindex+2;
+      }
+      if(xordump[8*i+2]){
+	bindex=bindex+4;
+      }
+      if(xordump[8*i+3]){
+	bindex=bindex+8;
+      }
+      if(xordump[8*i+4]){
+	bindex=bindex+16;
+      }
+      if(xordump[8*i+5]){
+	bindex=bindex+32;
+      }
+      if(xordump[8*i+6]){
+	bindex=bindex+64;
+      }
+      if(xordump[8*i+7]){
+	bindex=bindex+128;
+      }
+      cout<<"index: "<<bindex<<" Char: "<<static_cast<char>(bindex)<<endl;
+      sequence[i]=static_cast<char>(bindex);
+    }
+
+    for(int i=0; i<50; i++){
+      cout<<sequence[i];
+    }
+    cout<<endl;
+    
+    for(int i=0; i<50; i++){
+      cout<<sequence[49-i];
+    }
+    cout<<endl;
+
+    cout<<"Chi-value of sequence: "<<FreqCheck(sequence)<<endl;
+    cout<<"------------------------------------------------------------------------------------------------------"<<endl;
+    boolIncrement(key,8);
+    g++;
+    notdone=(g!=256);
+  }
   
+  /*
   for(int i=0; i<403; i++){
     cout<<xordump[i];
   }
@@ -59,7 +157,7 @@ int main(){
   }
 
 
-  */
+  //*/
   return 0;  
 }
 
@@ -230,12 +328,48 @@ void BinToHex(bool* bindump, char* hex){
 }
 
 
-float FreqCheck(char* sequence){
-  float count=0;
-  float freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
+//gives the probability that the char sequence has the same letter frequency as the english language using a chi-squared test.
+double FreqCheck(char* sequence){
+  //part of expected frequency. 
+  double freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
+  double* counts = new double[26];
   for(int i=0; i<26; i++){
-    count=count+freqs[i];
+    counts[i]=0;
   }
-  cout<<count<<endl;
-  return 0;
+  bool nulter = false;
+  int i=0;
+  int charcount=0;
+  //getting observed frequency. will use charcount to calc expected frequency.
+  while(nulter==false){
+    if(sequence[i]!='\0'){
+      if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
+	counts[tolower(sequence[i])-97]++;
+	charcount++;
+      }
+      i++;
+    }else{
+      nulter=true;
+    }
+  }
+  //doing a Chi-squared test for goodness of fit.
+  if(charcount==0){
+    return DBL_MAX;
+  }
+  double Chivalue = 0;
+  for(int g=0; g<26; g++){
+    Chivalue+=(pow(((freqs[i]*charcount)-counts[i]),2)/(freqs[i]*charcount));
+  }
+  delete counts;
+  return Chivalue;
+}
+
+void boolIncrement(bool* numb, int len){
+  for(int i=0; i<len; i++){
+    if(numb[i]){
+      numb[i]=false;
+    }else{
+      numb[i]=true;
+      i=len;
+    }
+  }
 }
