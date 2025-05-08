@@ -502,6 +502,8 @@ void normDelete(Node* & Head, Node* toDelete, Node* Replacement){
   }else if(isRight(toDelete)){
     toDelete->getParent()->setRight(Replacement);
   }else{
+    Head=Replacement;
+    cout<<"Angry Ron"<<endl;
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   delete toDelete;
@@ -515,6 +517,7 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
   }else if(isRight(Replacement)){
     Replacement->getParent()->setRight(Replacement->getRight());
   }else{
+    cout<<"Corn on the Cob"<<endl;
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   //Makes Replacement take ToDelete's place as ToDelete's parent's kid.
@@ -523,6 +526,8 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
   }else if(isRight(toDelete)){
     toDelete->getParent()->setRight(Replacement);
   }else{
+    Head=Replacement;
+    cout<<"Worldly Eater"<<endl;
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   //Gives Replacement ToDelete's Kids
@@ -535,15 +540,20 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
 
 //FIGures out which DELETE to use
 void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
+  cout<<"Pre-Del"<<endl;
+  RecPrint(0,Head);
   if(Replacement==x){
     normDelete(Head, toDelete, Replacement);
   }else{
     twokidDelete(Head, toDelete, Replacement);
   }
+  cout<<"Post-Del"<<endl;
+  RecPrint(0,Head);
 }
 
 void NullWipedown(Node* & Head, Node* Replacement, Node* x){
   cout<<"I AM GOING TO KILL THE QUEEN OF ENGLAND"<<endl;
+  RecPrint(0,Head);
   cout<<"R: "<<*(Replacement->getInt())<<" x: "<<*(x->getInt())<<endl;
   if(Replacement!=nullptr){
     if(*(Replacement->getInt())==0){
@@ -567,6 +577,7 @@ void NullWipedown(Node* & Head, Node* Replacement, Node* x){
     }
     delete x;
   }
+  RecPrint(0,Head);
 }
 
 void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
@@ -603,7 +614,7 @@ void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
 
 //whoo boy it's time to get COMPLICATED!
 void doFixup(Node* & Head, Node* x){
-  cout<<"x: "<<x->getInt()<<endl;
+  cout<<"x: "<<*(x->getInt())<<endl;
   int* tost;
   Node* Nulby;
   RecPrint(0,Head);
@@ -627,8 +638,10 @@ void doFixup(Node* & Head, Node* x){
       cout<<"FRANK"<<endl;
     }
     while(true){
-      cout<<"C1"<<endl;
+      cout<<"Once more, X is "<<*(x->getInt())<<endl;
+      RecPrint(0,Head);
       if(w->isRed){ //case 1
+	cout<<"C1"<<endl;
 	w->isRed=false;
 	x->getParent()->isRed=true;
 	if(isLeft(x)){
@@ -662,6 +675,11 @@ void doFixup(Node* & Head, Node* x){
 	  w->isRed=true;
 	  if(*(x->getInt())==0){
 	    Node* box = x->getParent();
+	    if(isLeft(x)){
+	      x->getParent()->setLeft(nullptr);
+	    }else{
+	      x->getParent()->setRight(nullptr);
+	    }
 	    delete x;
 	    x=box;
 	  }else{
@@ -677,7 +695,7 @@ void doFixup(Node* & Head, Node* x){
 	  w=getSibling(x);
 	}else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
 	  cout<<"C4"<<endl;
-	  cout<<x->getInt()<<endl;
+	  cout<<*(x->getInt())<<endl;
 	  w->isRed=x->getParent()->isRed;
 	  x->getParent()->isRed=false;
 	  if(isLeft(x)){
