@@ -47,10 +47,12 @@ int main(){
   char* sequence = new char[51];
   //box to hold best values
   char** sequences = new char*[10];
-  for(int i=0; i<10; i+=){
+  for(int i=0; i<10; i++){
     sequences[i] = new char[51];
   }
   double* values = new double[10];
+
+  
 
   for (int i=0; i<10; i++){
     values[i]=DBL_MAX;
@@ -58,6 +60,8 @@ int main(){
       sequences[i][j]='\0';
     }
   }
+
+  
 
   //actual translation setup
   while(notdone){
@@ -128,11 +132,45 @@ int main(){
     }
     cout<<endl;
 
-    cout<<"Chi-value of sequence: "<<FreqCheck(sequence)<<endl;
+
+    double freqsec = FreqCheck(sequence);
+    if(freqsec!=0){
+      int maxindex;
+      double max=0;
+      for(int i=0; i<10; i++){
+	if(values[i]>max){
+	  max = values[i];
+	  maxindex = i;
+	}
+      }
+      
+      if(freqsec<values[maxindex]){
+	strncpy(sequences[maxindex],sequence,50);
+	values[maxindex] = freqsec;
+      }
+    }
+    
+    cout<<"Chi-value of sequence: "<<freqsec<<endl;
     cout<<"------------------------------------------------------------------------------------------------------"<<endl;
     boolIncrement(key,8);
     g++;
     notdone=(g!=256);
+  }
+
+  cout<<"Best 10 sequences are as follows: (please note, these are unsorted.)"<<endl;
+  for(int i=0; i<10; i++){
+    cout<<"Number "<<i+1<<":"<<endl;
+    cout<<"Critical Value of GOF: "<<values[i]<<endl;
+    cout<<"Forwards: "<<endl;
+    for(int j=0; j<50; j++){
+      cout<<sequences[i][j];
+    }
+    cout<<endl;
+    cout<<"Backwards: "<<endl;
+    for(int j=0; j<50; j++){
+      cout<<sequences[i][49-j];
+    }
+    cout<<endl;
   }
   
   /*
