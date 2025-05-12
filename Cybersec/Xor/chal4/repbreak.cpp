@@ -31,10 +31,13 @@ int main(){
     sequences[i] = new char[51];
   }
   double* values = new double[10];
-
+  double* indexofseq = new double[10];
+  double* keyofseq = new double[10];
 
   for (int i=0; i<10; i++){
     values[i]=DBL_MAX;
+    indexofseq[i]=-1;
+    keyofseq[i]=-1;
     for(int j=0; j<51; j++){
       sequences[i][j]='\0';
     }
@@ -50,26 +53,14 @@ int main(){
     
     if(bindumpA[402]){
       h=false;
-      //cout<<"I AM WALUIGI"<<endl;
     }else{
       
       for(int i=0; i<8; i++){
 	key[i]=0;
       }
-      
-      /*
-	for (int i=0; i<10; i++){
-	values[i]=DBL_MAX;
-	for(int j=0; j<51; j++){
-	sequences[i][j]='\0';
-	}
-	}
-      */
-      
       //actual translation setup
       while(notdone){
 	cout<<"Count: "<<count<<" Key: "<<g<<endl;
-	//cout<<"THERE'S SOMETHING IN MY SOUP!"<<endl;
 	for(int i=0; i<403; i++){
 	  if(bindumpA[i]==key[i%8]){
 	    xordump[i]=0;
@@ -78,7 +69,7 @@ int main(){
 	  }
 	}
 	for(int i=0; i<51; i++){
-	  sequence[i]=='\0';
+	  sequence[i]='\0';
 	}
 	bool isvalid=true;
 	for(int i=0; i<50; i++){
@@ -107,34 +98,32 @@ int main(){
 	  if(xordump[8*i+7]){
 	    bindex=bindex+128;
 	  }
-	  if((bindex!=129)&&(bindex!=141)&&(bindex!=143)&&(bindex!=144)&&(bindex!=157)){
+	  if(bindex<=128){
 	    sequence[i]=static_cast<char>(bindex);
 	  }else{
-	    //cout<<bindex<<endl;
+	    i=51;
 	    isvalid=false;
 	  }
 	}
-	//cout<<"YOU BUTTHATT!"<<isvalid<<endl;
 	if(isvalid){
 	  double freqsec = FreqCheck(sequence);
 	  if(freqsec!=0){
 	    int maxindex;
-	    double max=0;
+	    double max=-1;
 	    for(int i=0; i<10; i++){
 	      if(values[i]>max){
 		max = values[i];
 		maxindex = i;
 	      }
 	    }
-	    
 	    if(freqsec<values[maxindex]){
 	      strncpy(sequences[maxindex],sequence,50);
 	      values[maxindex] = freqsec;
+	      indexofseq[maxindex] = count; 
+	      keyofseq[maxindex] = g;
 	    }
 	  }
-	  cout<<"Chi-value of sequence: "<<freqsec<<endl;
 	}
-	
 	boolIncrement(key,8);
 	g++;
 	notdone=(g!=256);
@@ -145,12 +134,8 @@ int main(){
   cout<<"Best 10 sequences are as follows: (please note, these are unsorted.)"<<endl;
   for(int i=0; i<10; i++){
     cout<<"Number "<<i+1<<":"<<endl;
-    cout<<"Critical Value of GOF: "<<values[i]<<endl;
-    cout<<"Forwards: "<<endl;
-    for(int j=0; j<50; j++){
-      cout<<sequences[i][j];
-    }
-    cout<<endl;
+    cout<<"QSADETC: "<<values[i]<<endl;
+    cout<<"Count: "<<indexofseq[i]<<" Key: "<<keyofseq[i]<<endl;
     cout<<"Backwards: "<<endl;
     for(int j=0; j<50; j++){
       cout<<sequences[i][49-j];
@@ -295,6 +280,7 @@ void HexToBin(bool* bindump){
       bindump [(4*i)+3] = 1;
     }else{
       cout<<"INVALID INPUT! (Contained non-hexadecimal character)"<<endl;
+      i = lastindex+3;
       bindump[402]=1;
     }
   }
@@ -326,10 +312,9 @@ void BinToHex(bool* bindump, char* hex){
   }
 }
 
-
-//gives the probability that the char sequence has the same letter frequency as the english language using a chi-squared test.
+//takes the expected frequency. Subtracts the true, then takes the abs value. divides by charcount to keep small-char values from dominating.
 double FreqCheck(char* sequence){
-  //part of expected frequency. 
+  //part of expected frequency.
   double freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
   double* counts = new double[26];
   for(int i=0; i<26; i++){
@@ -337,29 +322,29 @@ double FreqCheck(char* sequence){
   }
   bool nulter = false;
   int i=0;
-  int charcount=0;
+  double charcount=0;
   //getting observed frequency. will use charcount to calc expected frequency.
   while(nulter==false){
     if(sequence[i]!='\0'){
       if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
-	counts[tolower(sequence[i])-97]++;
-	charcount++;
+        counts[tolower(sequence[i])-97]++;
+        charcount+=1;
       }
       i++;
     }else{
       nulter=true;
     }
   }
-  //doing a Chi-squared test for goodness of fit.
+  cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
   if(charcount==0){
     return DBL_MAX;
   }
-  double Chivalue = 0;
+  double value = 0;
   for(int g=0; g<26; g++){
-    Chivalue+=(pow(((freqs[i]*charcount)-counts[i]),2)/(freqs[i]*charcount));
+    value+=(abs((freqs[g]*charcount)-counts[g])/charcount);
   }
   delete counts;
-  return Chivalue;
+  return value;
 }
 
 void boolIncrement(bool* numb, int len){

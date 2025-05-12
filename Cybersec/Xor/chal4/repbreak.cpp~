@@ -41,8 +41,10 @@ int main(){
   }
 
   bool h=true;
-  
+  int count=0;
   while(h){
+    g=0;
+    count++;
     notdone=true;
     HexToBin(bindumpA);
     
@@ -66,6 +68,7 @@ int main(){
       
       //actual translation setup
       while(notdone){
+	cout<<"Count: "<<count<<" Key: "<<g<<endl;
 	//cout<<"THERE'S SOMETHING IN MY SOUP!"<<endl;
 	for(int i=0; i<403; i++){
 	  if(bindumpA[i]==key[i%8]){
@@ -104,7 +107,7 @@ int main(){
 	  if(xordump[8*i+7]){
 	    bindex=bindex+128;
 	  }
-	  if((bindex==0)||((32<bindex)&&(bindex<128))){
+	  if((bindex!=129)&&(bindex!=141)&&(bindex!=143)&&(bindex!=144)&&(bindex!=157)){
 	    sequence[i]=static_cast<char>(bindex);
 	  }else{
 	    //cout<<bindex<<endl;
