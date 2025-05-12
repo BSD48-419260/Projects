@@ -56,25 +56,27 @@ int main(){
   Node* buf = nullptr;
   cout<<"==========================="<<endl;
   cout<<"Welcome to:"<<endl;
-  cout<<"_____     ___________"<<endl;
-  cout<<"\\    \\    \\___   ___/"<<endl;
-  cout<<" | |\\ \\       | |"<<endl;
-  cout<<" | |/ /       | |"<<endl;
-  cout<<" |   |        | |"<<endl;
-  cout<<" | |\\ \\       | |"<<endl;
-  cout<<" | |/ /       | |"<<endl;
-  cout<<"/____/ inary /___\\ree "<<endl;
+  cout<<"\033[31m_____        \033[0m_____      "<<endl;
+  cout<<"\033[31m\\    \\       \033[0m\\    \\     "<<endl;
+  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
+  cout<<"\033[31m | |/ /      \033[0m | |/ /    "<<endl;
+  cout<<"\033[31m |   |       \033[0m |   |     "<<endl;
+  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
+  cout<<"\033[31m | | \\ \\     \033[0m | |/ /    "<<endl;
+  cout<<"\033[31m/___\\/__\\ed  \033[0m/____/lack "<<endl;
   bool notQuit=true;
   char inpstring[10];
+  char gremlin[21];
   //primary loop
   while(notQuit){
     try{
-      //robust command handler.
+      //robust-ish command handler.
       cout<<"Please input a command. (Valid commands: ADD, ADDFILE, DELETE, SEARCH, PRINT, QUIT)"<<endl;
       for(int i=0; i<10; i++){
 	inpstring[i]='\0';
       }
-      cin >> inpstring;
+      cin.getline(gremlin, sizeof(gremlin), '\n');
+      strncpy(inpstring, gremlin, 10);
       if(cin.fail()){
 	cout<<"Something went wrong. Please try again."<<endl;
 	cin.clear();
@@ -273,6 +275,7 @@ void addNode(Node* & Head, int ToAdd){
   for(int i=0; i<ToAdd; i++){
     bool acin=false;
     while (acin==false){
+      cout<<"Please insert new entry number "<<i+1<<":"<<endl;
       cin>>Integ;
       if(cin.fail()){
 	cout<<"I think you did something wrong. please try again."<<endl;
@@ -503,8 +506,8 @@ void normDelete(Node* & Head, Node* toDelete, Node* Replacement){
     toDelete->getParent()->setRight(Replacement);
   }else{
     Head=Replacement;
-    cout<<"Angry Ron"<<endl;
-    cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
+    //cout<<"Angry Ron"<<endl;
+    //cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   delete toDelete;
   return;
@@ -517,8 +520,9 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
   }else if(isRight(Replacement)){
     Replacement->getParent()->setRight(Replacement->getRight());
   }else{
-    cout<<"Corn on the Cob"<<endl;
+    //cout<<"Corn on the Cob"<<endl;
     cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
+    cout<<"If this program does not crash, it is reccomended that you restart it."<<endl;
   }
   //Makes Replacement take ToDelete's place as ToDelete's parent's kid.
   if(isLeft(toDelete)){
@@ -527,8 +531,8 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
     toDelete->getParent()->setRight(Replacement);
   }else{
     Head=Replacement;
-    cout<<"Worldly Eater"<<endl;
-    cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
+    //cout<<"Worldly Eater"<<endl;
+    //cout<<"A Fatal Error has occured (parent mismatch or root)"<<endl;
   }
   //Gives Replacement ToDelete's Kids
   Replacement->setLeft(toDelete->getLeft());
@@ -540,21 +544,21 @@ void twokidDelete(Node* & Head, Node* toDelete, Node* Replacement){
 
 //FIGures out which DELETE to use
 void figDelete(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
-  cout<<"Pre-Del"<<endl;
-  RecPrint(0,Head);
+  //cout<<"Pre-Del"<<endl;
+  //RecPrint(0,Head);
   if(Replacement==x){
     normDelete(Head, toDelete, Replacement);
   }else{
     twokidDelete(Head, toDelete, Replacement);
   }
-  cout<<"Post-Del"<<endl;
-  RecPrint(0,Head);
+  //cout<<"Post-Del"<<endl;
+  //RecPrint(0,Head);
 }
 
 void NullWipedown(Node* & Head, Node* Replacement, Node* x){
-  cout<<"I AM GOING TO KILL THE QUEEN OF ENGLAND"<<endl;
-  RecPrint(0,Head);
-  cout<<"R: "<<*(Replacement->getInt())<<" x: "<<*(x->getInt())<<endl;
+  //cout<<"I AM GOING TO KILL THE QUEEN OF ENGLAND"<<endl;
+  //RecPrint(0,Head);
+  //cout<<"R: "<<*(Replacement->getInt())<<" x: "<<*(x->getInt())<<endl;
   if(Replacement!=nullptr){
     if(*(Replacement->getInt())==0){
       if(isLeft(Replacement)){
@@ -577,12 +581,12 @@ void NullWipedown(Node* & Head, Node* Replacement, Node* x){
     }
     delete x;
   }
-  RecPrint(0,Head);
+  //RecPrint(0,Head);
 }
 
 void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
-  cout<<"StepTwo"<<endl;
-  RecPrint(0, Head);
+  //cout<<"StepTwo"<<endl;
+  //RecPrint(0, Head);
   if(toDelete->isRed){
     if((*(Replacement->getInt())==0)||(Replacement->isRed)){
       figDelete(Head, toDelete, Replacement, x);
@@ -614,10 +618,10 @@ void stepTwo(Node* & Head, Node* toDelete, Node* Replacement, Node* x){
 
 //whoo boy it's time to get COMPLICATED!
 void doFixup(Node* & Head, Node* x){
-  cout<<"x: "<<*(x->getInt())<<endl;
+  //cout<<"x: "<<*(x->getInt())<<endl;
   int* tost;
   Node* Nulby;
-  RecPrint(0,Head);
+  //RecPrint(0,Head);
   /*if(x==nullptr){
     return;
   }*/
@@ -635,13 +639,13 @@ void doFixup(Node* & Head, Node* x){
 	x->getParent()->setLeft(Nulby);
       }
       w=Nulby;
-      cout<<"FRANK"<<endl;
+      //cout<<"FRANK"<<endl;
     }
     while(true){
-      cout<<"Once more, X is "<<*(x->getInt())<<endl;
-      RecPrint(0,Head);
+      //cout<<"Once more, X is "<<*(x->getInt())<<endl;
+      //RecPrint(0,Head);
       if(w->isRed){ //case 1
-	cout<<"C1"<<endl;
+	//cout<<"C1"<<endl;
 	w->isRed=false;
 	x->getParent()->isRed=true;
 	if(isLeft(x)){
@@ -659,7 +663,7 @@ void doFixup(Node* & Head, Node* x){
 	    x->getParent()->setLeft(Nulby);
 	  }
 	  w=Nulby;
-	  cout<<"TOBIAS"<<endl;
+	  //cout<<"TOBIAS"<<endl;
 	}
 	
       }else{
@@ -671,7 +675,7 @@ void doFixup(Node* & Head, Node* x){
 	  redkidcount++;
 	}
 	if(redkidcount==0){ //case 2
-	  cout<<"C2"<<endl;
+	  //cout<<"C2"<<endl;
 	  w->isRed=true;
 	  if(*(x->getInt())==0){
 	    Node* box = x->getParent();
@@ -694,8 +698,8 @@ void doFixup(Node* & Head, Node* x){
 	  }
 	  w=getSibling(x);
 	}else if ((isLeft(x)&isRed(w->getRight()))||(isRight(x)&isRed(w->getLeft()))){ //if it made it this far, one is red. if it's this we go to 4 if not 3. also this is case 4
-	  cout<<"C4"<<endl;
-	  cout<<*(x->getInt())<<endl;
+	  //cout<<"C4"<<endl;
+	  //cout<<*(x->getInt())<<endl;
 	  w->isRed=x->getParent()->isRed;
 	  x->getParent()->isRed=false;
 	  if(isLeft(x)){
@@ -714,13 +718,13 @@ void doFixup(Node* & Head, Node* x){
 	    }else if(isRight(x)){
 	      x->getParent()->setRight(nullptr);
 	    }else{
-	      cout<<"Crabs."<<endl;
+	      cout<<"If you're seeing this, you're either reading the code, or something went wrong."<<endl;
 	    }
 	    delete x;
 	  }
 	  return;
 	}else{ //case 3
-	  cout<<"C3"<<endl;
+	  //cout<<"C3"<<endl;
 	  w->isRed=true;
 	  if (isLeft(x)){
 	    w->getLeft()->isRed=false;
@@ -850,11 +854,22 @@ int getInt(){
 void DetectNumb(Node* Cur, int Check, int Depth){
   if((*(Cur->getInt()))==Check){
     if(Cur->getNext()==nullptr){
+      if(Cur->isRed){
+	cout<<"\033[31m";
+      }else{
+	cout<<"\033[0m";
+      }
       cout<<"That number appears in the tree! it appears only once."<<endl;
-      cout<<"It's parent node was ";
+      cout<<"It's parent node was \033[0m";
     }else{
+      if(Cur->isRed){
+	cout<<"\033[31m";
+      }else{
+	cout<<"\033[0m";
+      }
       int Dep = 0;
       cout<<"That number appears in the tree! it appears "<<getDepth(Cur,Dep)<<" times."<<endl;
+      cout<<"It's parent node was \033[0m";
     }
   }else if((*(Cur->getInt()))<Check){
     if(Cur->getRight()!=nullptr){
@@ -871,13 +886,18 @@ void DetectNumb(Node* Cur, int Check, int Depth){
       cout<<"If it were, its parent node would be ";
     }
   }
+  if(Cur->isRed){
+    cout<<"\033[31m";
+  }else{
+    cout<<"\033[0m";
+  }
   cout<<"a node containing the number "<<(*(Cur->getInt()));
   if(Depth!=0){
     cout<<", Child of ";
   }else{
     cout<<", Which is the root node.";
   }
-  cout<<endl;
+  cout<<"\033[0m"<<endl;
 }
 
 //intended to get the depth of a LinkedList
@@ -910,18 +930,25 @@ void addFromFile(Node* & head){
 	}
       }
     }catch(...){
-      cout<<"Something Went Wrong. You are strongly advised to use PRINT to check the structure of the Binary Tree as data may have been corrupted"<<endl;
+      cout<<"Something Went Wrong. You are strongly advised to use PRINT to check the structure of the Tree as data may have been corrupted"<<endl;
     }
-    
   }else{
     cout<<"ERROR! NO VALID FILE!"<<endl;
     return;
   }
+  delete[] filename;
   myFile.close();
 }
 
 void rotLeft(Node* & Head,Node* Cur){
-  cout<<"I Am Alpharius: "<<*(Cur->getInt())<<endl;
+  /*
+  if(Cur->isRed){
+    cout<<"\033[31m";
+  }else{
+    cout<<"\033[0m";
+  }
+  cout<<"I Am Alpharius: "<<*(Cur->getInt())<<"\033[0m"<<endl;
+  //*/
   Node* ParBox=Cur->getParent();
   Node* OrigRight = Cur->getRight();
   Cur->setRight(OrigRight->getLeft());
@@ -939,7 +966,14 @@ void rotLeft(Node* & Head,Node* Cur){
 }
 
 void rotRight(Node* & Head, Node* Cur){
-  cout<<"I Am Omegon: "<<*(Cur->getInt())<<endl;
+  /*
+  if(Cur->isRed){
+    cout<<"\033[31m";
+  }else{
+    cout<<"\033[0m";
+  }
+  cout<<"I Am Omegon: "<<*(Cur->getInt())<<"\033[0m"<<endl;
+  //*/
   Node* ParBox=Cur->getParent();
   Node* OrigLeft = Cur->getLeft();
   Cur->setLeft(OrigLeft->getRight());
