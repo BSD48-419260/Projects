@@ -1,0 +1,72 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+using namespace std;
+
+//function signatures
+void getStringFromInput(char* inpstring);
+
+//main. 
+int main(){
+  srand(time(0));
+  Node* Head= nullptr;
+  Node* buf = nullptr;
+  cout<<"==========================="<<endl;
+  cout<<"Welcome to:"<<endl;
+  cout<<"\033[31m_____        \033[0m_____      "<<endl;
+  cout<<"\033[31m\\    \\       \033[0m\\    \\     "<<endl;
+  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
+  cout<<"\033[31m | |/ /      \033[0m | |/ /    "<<endl;
+  cout<<"\033[31m |   |       \033[0m |   |     "<<endl;
+  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
+  cout<<"\033[31m | | \\ \\     \033[0m | |/ /    "<<endl;
+  cout<<"\033[31m/___\\/__\\ed  \033[0m/____/lack "<<endl;
+  bool notQuit=true;
+  char inpstring[10];
+  char gremlin[21];
+  //primary loop
+  while(notQuit){
+    try{
+      //robust-ish command handler.
+      cout<<"Please input a command. (Valid commands: ADD, ADDFILE, DELETE, SEARCH, PRINT, QUIT)"<<endl;
+      for(int i=0; i<10; i++){
+	inpstring[i]='\0';
+      }
+      cin.getline(gremlin, sizeof(gremlin), '\n');
+      strncpy(inpstring, gremlin, 10);
+      if(cin.fail()){
+	cout<<"Something went wrong. Please try again."<<endl;
+	cin.clear();
+	cin.ignore(100000,'\n');
+      }else if (strcmp(inpstring,"ADD")==0){
+        cout<<"How many will you be adding?"<<endl;
+	addNode(Head,getInt());
+      }else if (strcmp(inpstring,"ADDFILE")==0){
+	char bufferarray[10];
+	cin.getline(bufferarray, sizeof(bufferarray),'\n');
+	addFromFile(Head);
+      }else if (strcmp(inpstring,"DELETE")==0){
+	cout<<"To Cancel, Input the number 0"<<endl;
+        cout<<"SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALT"<<endl;
+	removeNode(Head, findNode(Head, getInt()));
+      }else if (strcmp(inpstring,"SEARCH")==0){
+        DetectNumb(Head, getInt(), 0);
+      }else if (strcmp(inpstring,"PRINT")==0){
+	RecPrint(0, Head);
+	cout<<"\033[0m";
+      }else if (strcmp(inpstring,"QUIT")==0){
+	notQuit=false;
+	//no command needed, just quit the loop.
+      }else{
+	cout<<"Invalid Command."<<endl;
+      }
+    }catch(...){
+      //In case of problems
+      cout<<"Something went wrong. Please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }
+  }
+  cout<<"Have a great day."<<endl;
+  return 0; 
+}
