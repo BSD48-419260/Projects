@@ -70,13 +70,76 @@ struct node{
     return;
   }
 
+  void cutConnection(node* toCut, bool print=true){
+    if(!isConnected(toCut)){
+      if(print){
+	cout<<"Those nodes are not connected."<<endl;
+      }
+      return;
+    }
+    if(connectionNum>1){
+      index = getIndex(toCut);
+      int* newConVals= new int[connectionNum-1];
+      node** newCons = new node*[connectionNum-1];
+      bool atIndex=false;
+      for(int i=0; i<connectionNum; i++){
+	if(atIndex==false){
+	  if(i!=index){
+	    newConVals[i] = conVal[i];
+	    newCons[i] = connections[i];
+	  }else{
+	    atIndex=true;
+	    newConVals[i] = conVal[i+1];
+	    newCons[i] = connections[i+1];
+	  }
+	}else{
+	  newConVals[i] = conVal[i+1];
+	  newCons[i] = connections[i+1];
+	}
+      }
+      
+      newConVals[connectionNum] = newVal;
+      newCons[connectionNum] = newConnect;
+      delete[] conVal;
+      delete[] connections;
+      conVal = newConVals;
+      connections = newCons;
+      connectionNum--;
+    }else{
+      delete conVal;
+      delete connections;
+      conVal = nullptr;
+      connections = nullptr;
+      connectionNum=0;
+    }
+    return;
+  }
+  
   bool isConnected(node* toTest){
     for(int i=0; i<connectionNum; i++){
-      if(connections[i]=toTest){
+      if(connections[i]==toTest){
 	return true;
       }
     }
     return false;
+  }
+
+  int getValue(node* toTest){
+    for(int i=0; i<connectionNum; i++){
+      if(connections[i]==toTest){
+	return conVal[i];
+      }
+    }
+    return -1;
+  }
+
+  int getIndex(node* toTest){
+    for(int i=0; i<connectionNum; i++){
+      if(connections[i]==toTest){
+	return i;
+      }
+    }
+    return -1;
   }
   
  private:
@@ -90,9 +153,14 @@ struct node{
 
 //function signatures
 void getStringFromInput(char* inpstring);
-void printConnections(node* box);
+void printConnections(node** box);
+void printBox(node** box);
 int lengthOfStr(char* stringy);
-void addNode(node* box);
+void addNode(node** box);
+void addConnection(node** box);
+int getInt();
+void cutNode(node** box);
+void cutConnection(node** box);
 
 //main.
 int main(){
@@ -153,11 +221,26 @@ int main(){
   }
   cout<<"Have a wonderful day."<<endl;
   */
-  node* box = new node[20];
+  node** box = new node*[20];
   for(int i=0; i<20; i++){
     box[i]=nullptr;
   }
+  addNode(box);
+  addNode(box);
+  addNode(box);
+  addNode(box);
+  addNode(box);
+  addNode(box);
   
+  box[0]->addConnection(1, box[1]);
+  box[1]->addConnection(10, box[2]);
+  box[2]->addConnection(100, box[3]);
+  box[3]->addConnection(1000, box[4]);
+  box[4]->addConnection(10000, box[5]);
+  box[5]->addConnection(100000, box[0]);
+  
+  printConnections(box);
+  printBox(box);
   return 0; 
 }
 
@@ -187,20 +270,22 @@ void getStringFromInput(char* inpstring){
   return;
 }
 
-void printConnections(node* box){
+void printConnections(node** box){
   int lastindex = -1;
   for(int i=0; i<20; i++){
     if(box[i] == nullptr){
       lastindex = i;
       i=21;
     }
+  }
+  if(lastindex==-1){
     lastindex=20;
   }
   if(lastindex==0){
     cout<<"There are no nodes.";
     return;
   }
-  cout<<"     |";
+  cout<<"Adj? |";
   for(int i=0; i<lastindex; i++){
     for(int j=0; j<5; j++){
       if(box[i]->getName()[j]!='\0'){
@@ -221,11 +306,42 @@ void printConnections(node* box){
       }
     }
     cout<<"|";
-
+    for(int j=0; j<lastindex; j++){
+      if(box[i]==box[j]){
+	cout<<"  =  ";
+      }else if(box[i]->isConnected(box[j])){
+	int value = box[i]->getValue(box[j]);
+	if(value<10){
+	  cout<<"  "<<value<<"  ";
+	}else if(value<100){
+	  cout<<" "<<value<<"  ";
+	}else if(value<1000){
+	  cout<<" "<<value<<" ";
+	}else if(value<10000){
+	  cout<<value<<" ";
+	}else if(value<100000){
+	  cout<<value;
+	}else{
+	  cout<<"OvrFlW";
+	}
+      }else{
+	cout<<"  -  ";
+      }
+      cout<<'|';
+    }
+    
     cout<<endl;
   }
-  
-  
+}
+
+void printBox(node** box){
+  for(int i=0; i<20; i++){
+    if(box[i]!=nullptr){
+      cout<<i+1<<": "<<box[i]->getName();
+    }else{
+      return;
+    }
+  }
 }
 
 int lengthOfStr(char* stringy){
@@ -237,7 +353,110 @@ int lengthOfStr(char* stringy){
   return 15;
 }
 
-void addNode(node* box){
-  node* theodore = new node();
-  
+void addNode(node** box){
+  for(int i=0; i<20; i++){
+    if(box[i]==nullptr){
+      node* theodore = new node();
+      char* namestr = new char[16];
+      cout<<"Please input name for new node."<<endl;
+      getStringFromInput(namestr);
+      theodore->setName(namestr);
+      delete namestr;
+      box[i]=theodore;
+      return;
+    }
+  }
+  cout<<"No Open Space!"<<endl;
+}
+
+void addConnection(node** box){
+  printBox(box);
+  char* newName = new char[16];
+  for(int i=0; i<16; i++){
+    newName[i]='\0';
+  }
+  cout<<"Please input the name of the node to make a one-way connection from."<<endl;
+  getStringFromInput(newName);
+  node* origin = nullptr;
+  for(int i=0; i<20; i++){
+    if(strcmp(box[i],newName)==0){
+      origin=box[i];
+      i=21;
+    }
+  }
+  if(origin==nullptr){
+    cout<<"There is no node by that name."<<endl;
+    return;
+  }
+  cout<<"Please input the name of the destination node."<<endl;
+  getStringFromInput(newName);
+  node* dest = nullptr;
+  for(int i=0; i<20; i++){
+    if(strcmp(box[i],newName)==0){
+      dest=box[i];
+      i=21;
+    }
+  }
+  if(dest==nullptr){
+    cout<<"There is no Node by that name."<<endl;
+    return;
+  }
+  cout<<"Please input the distance between the two in generic units."<<endl;
+  bool acin=false;
+  int value=-1;
+  while(!acin){
+    value = getInt();
+    if(value>=0){
+      acin=true;
+    }else{
+      cout<<"Negative numbers are not allowed."<<endl;
+    }
+  }
+  origin->addConnection(value, dest);
+}
+
+
+int getInt(){
+  bool acin=false;
+  int Integ;
+  while (acin==false){
+    cout<<"A positive, whole number, please: "<<endl;
+    cin>>Integ;
+    if(cin.fail()){
+      cout<<"I think you did something wrong. please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      acin=true;
+    }
+  }
+  return Integ;
+}
+
+void cutNode(node** box){
+  printBox(box);
+  char* newName = new char[16];
+  for(int i=0; i<16; i++){
+    newName[i]='\0';
+  }
+  cout<<"Please input the name of the node to be removed."<<endl;
+  getStringFromInput(newName);
+  node* deadMeat = nullptr;
+  for(int i=0; i<20; i++){
+    if(strcmp(box[i],newName)==0){
+      deadMeat=box[i];
+      i=21;
+    }
+  }
+  if(dest==nullptr){
+    cout<<"There is no Node by that name."<<endl;
+    return;
+  }
+  for(int i=0; i<20; i++){
+    box[i]->cutConnection();
+  }
+}
+
+void cutConnection(node** box){
+
 }

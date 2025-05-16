@@ -197,7 +197,7 @@ void ASCIIToBin(bool* bindump, bool big=false){
   int lastindex = getIndexOfLastNonNullChar(inpstring, 201);
   //perform ASCII-To-Bin
   for(int i=0; i<lastindex+1; i++){
-    int intvalue = inpstring[lastindex-i];
+    int intvalue = inpstring[i];
     if(intvalue>=128){
       bindump [(8*i)+7] = 1;
       intvalue-=128;
