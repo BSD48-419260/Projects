@@ -77,7 +77,7 @@ int main(){
     if(i%75==0){
       cout<<endl;
     }
-    cout<<sequence[last-1-i];
+    cout<<sequence[i];
   }
   cout<<endl;
   return 0;  
@@ -100,7 +100,7 @@ void getBigStringFromInput(char* inpstring){
     }
     acin=false;
     while(acin==false){
-      cout<<"(IAMWHOIAM)"<<endl;
+      cout<<"(IAMWHOIAM!)"<<endl;
       cin.getline(bufferarray, sizeof(bufferarray),'\n');
       if(bufferarray[0]=='\0'){
 	moreLines=false;
@@ -191,7 +191,7 @@ void ASCIIToBin(bool* bindump, bool big=false){
   }
   cout<<endl;
   //prepare bindump
-  for(int i=0; i<1601; i++){
+  for(int i=0; i<1600; i++){
     bindump[i]=0;
   }
   int lastindex = getIndexOfLastNonNullChar(inpstring, 201);
@@ -199,34 +199,34 @@ void ASCIIToBin(bool* bindump, bool big=false){
   for(int i=0; i<lastindex+1; i++){
     int intvalue = inpstring[i];
     if(intvalue>=128){
-      bindump [(8*i)+7] = 1;
+      bindump [(8*i)+0] = 1;
       intvalue-=128;
     }
     if(intvalue>=64){
-      bindump [(8*i)+6] = 1;
+      bindump [(8*i)+1] = 1;
       intvalue-=64;
     }
     if(intvalue>=32){
-      bindump [(8*i)+5] = 1;
+      bindump [(8*i)+2] = 1;
       intvalue-=32;
     }
     if(intvalue>=16){
-      bindump [(8*i)+4] = 1;
+      bindump [(8*i)+3] = 1;
       intvalue-=16;
     }
     if(intvalue>=8){
-      bindump [(8*i)+3] = 1;
+      bindump [(8*i)+4] = 1;
       intvalue-=8;
     }
     if(intvalue>=4){
-      bindump [(8*i)+2] = 1;
+      bindump [(8*i)+5] = 1;
       intvalue-=4;
     }
     if(intvalue>=2){
-      bindump [(8*i)+1] = 1;
+      bindump [(8*i)+6] = 1;
       intvalue-=2;
     }
-    bindump [(8*i)+0] = intvalue;
+    bindump [(8*i)+7] = intvalue;
   }
   delete inpstring;
   return;
@@ -239,27 +239,29 @@ void BinToHex(bool* bindump, char* hex){
     hex[i]='\0';
   }
   char hexchars[17] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f','\0'};
+  cout<<"(IAMWHOIAM)|";
   for(int i=0; i<400; i++){
     int bindex=0;
-    if(bindump[4*i]){
+    if(bindump[4*i+3]){
       bindex=bindex+1;
     }
-    if(bindump[4*i+1]){
+    if(bindump[4*i+2]){
       bindex=bindex+2;
     }
-    if(bindump[4*i+2]){
+    if(bindump[4*i+1]){
       bindex=bindex+4;
     }
-    if(bindump[4*i+3]){
+    if(bindump[4*i+0]){
       bindex=bindex+8;
     }
     //cout<<"index: "<<bindex<<" Char: "<<hexchars[bindex]<<endl;
     hex[i]=hexchars[bindex];
+    cout<<bindex<<'|';
   }
+  cout<<endl;
 }
 
 void makeKey(bool* key,int length){
-  char* keyorigin = new char[201];
   cout<<"Key. ";
   ASCIIToBin(key);
   int last = lastOneInBools(key, length);
