@@ -15,6 +15,12 @@ struct node{
     conVal = nullptr;
     connections = nullptr;
   }
+
+  ~node(){
+    delete name;
+    delete[] conVal;
+    delete[] connections;
+  }
   
   char* getName(){
     return name;
@@ -78,7 +84,7 @@ struct node{
       return;
     }
     if(connectionNum>1){
-      index = getIndex(toCut);
+      int index = getIndex(toCut);
       int* newConVals= new int[connectionNum-1];
       node** newCons = new node*[connectionNum-1];
       bool atIndex=false;
@@ -97,9 +103,6 @@ struct node{
 	  newCons[i] = connections[i+1];
 	}
       }
-      
-      newConVals[connectionNum] = newVal;
-      newCons[connectionNum] = newConnect;
       delete[] conVal;
       delete[] connections;
       conVal = newConVals;
@@ -164,30 +167,30 @@ void cutConnection(node** box);
 
 //main.
 int main(){
-  /*
-  srand(time(0));
-  node* box = new node[20];
+  node** box = new node*[20];
   for(int i=0; i<20; i++){
     box[i]=nullptr;
   }
+  
   cout<<"==========================="<<endl;
   cout<<"Welcome to:"<<endl;
-  cout<<"\033[31m_____        \033[0m_____      "<<endl;
-  cout<<"\033[31m\\    \\       \033[0m\\    \\     "<<endl;
-  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
-  cout<<"\033[31m | |/ /      \033[0m | |/ /    "<<endl;
-  cout<<"\033[31m |   |       \033[0m |   |     "<<endl;
-  cout<<"\033[31m | |\\ \\      \033[0m | |\\ \\    "<<endl;
-  cout<<"\033[31m | | \\ \\     \033[0m | |/ /    "<<endl;
-  cout<<"\033[31m/___\\/__\\ed  \033[0m/____/lack "<<endl;
+  cout<<" _____            _    _         "<<endl;
+  cout<<"/ ___ \\          / \\  / \\        "<<endl;
+  cout<<"| | /__\\        / _ \\/ _ \\       "<<endl;
+  cout<<"| | ___        / / \\  / \\ \\      "<<endl;
+  cout<<"| | \\ |        | |  \\/  | |      "<<endl;
+  cout<<"| | | |        | |      | |      "<<endl;
+  cout<<"| |_| |        | |      | |      "<<endl;
+  cout<<"\\_____/ raph  /___\\    /___\\aker "<<endl;
   bool notQuit=true;
   char inpstring[16];
   char gremlin[16];
   //primary loop
+  //*
   while(notQuit){
     try{
       //robust-ish command handler.
-      cout<<"Please input a command. (Valid commands: ADD, ADDFILE, DELETE, SEARCH, PRINT, QUIT)"<<endl;
+      cout<<"Please input a command. (Valid commands: ADD, DELETE, CONNECT, CUT, PATH, PRINT, QUIT)"<<endl;
       for(int i=0; i<16; i++){
 	inpstring[i]='\0';
       }
@@ -198,14 +201,20 @@ int main(){
 	cin.clear();
 	cin.ignore(100000,'\n');
       }else if (strcmp(inpstring,"ADD")==0){
-	
+	addNode(box);
       }else if (strcmp(inpstring,"DELETE")==0){
-	
-      }else if (strcmp(inpstring,"SEARCH")==0){
-        
+	cutNode(box);
+      }else if (strcmp(inpstring,"CONNECT")==0){
+	addConnection(box);
+      }else if (strcmp(inpstring,"CUT")==0){
+        cutConnection(box);
+      }else if (strcmp(inpstring,"PATH")==0){
+        cout<<"Working on this one. does nothing for now..."<<endl;
       }else if (strcmp(inpstring,"PRINT")==0){
-	RecPrint(0, Head);
-	
+	cout<<"Names:"<<endl;
+	printBox(box);
+	cout<<"Connections"<<endl;
+	printConnections(box);
       }else if (strcmp(inpstring,"QUIT")==0){
 	notQuit=false;
 	//no command needed, just quit the loop.
@@ -219,8 +228,8 @@ int main(){
       cin.ignore(100000,'\n');
     }
   }
-  cout<<"Have a wonderful day."<<endl;
-  */
+  cout<<"Have a terrific day."<<endl;
+  /*
   node** box = new node*[20];
   for(int i=0; i<20; i++){
     box[i]=nullptr;
@@ -241,6 +250,7 @@ int main(){
   
   printConnections(box);
   printBox(box);
+  //*/
   return 0; 
 }
 
@@ -282,7 +292,7 @@ void printConnections(node** box){
     lastindex=20;
   }
   if(lastindex==0){
-    cout<<"There are no nodes.";
+    cout<<"There are no nodes."<<endl;
     return;
   }
   cout<<"Adj? |";
@@ -322,7 +332,7 @@ void printConnections(node** box){
 	}else if(value<100000){
 	  cout<<value;
 	}else{
-	  cout<<"OvrFlW";
+	  cout<<"OvFlw";
 	}
       }else{
 	cout<<"  -  ";
@@ -337,7 +347,7 @@ void printConnections(node** box){
 void printBox(node** box){
   for(int i=0; i<20; i++){
     if(box[i]!=nullptr){
-      cout<<i+1<<": "<<box[i]->getName();
+      cout<<i+1<<": "<<box[i]->getName()<<endl;
     }else{
       return;
     }
@@ -356,10 +366,19 @@ int lengthOfStr(char* stringy){
 void addNode(node** box){
   for(int i=0; i<20; i++){
     if(box[i]==nullptr){
-      node* theodore = new node();
       char* namestr = new char[16];
       cout<<"Please input name for new node."<<endl;
       getStringFromInput(namestr);
+      for(int j=0; j<20; j++){
+	if(box[j]!=nullptr){
+	  if(strcmp(box[j]->getName(),namestr)==0){
+	    delete[] namestr;
+	    cout<<"You cannot have two nodes with the same name!"<<endl;
+	    return;
+	  }
+	}
+      }
+      node* theodore = new node();
       theodore->setName(namestr);
       delete namestr;
       box[i]=theodore;
@@ -379,9 +398,11 @@ void addConnection(node** box){
   getStringFromInput(newName);
   node* origin = nullptr;
   for(int i=0; i<20; i++){
-    if(strcmp(box[i],newName)==0){
-      origin=box[i];
-      i=21;
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	origin=box[i];
+	i=21;
+      }
     }
   }
   if(origin==nullptr){
@@ -392,14 +413,19 @@ void addConnection(node** box){
   getStringFromInput(newName);
   node* dest = nullptr;
   for(int i=0; i<20; i++){
-    if(strcmp(box[i],newName)==0){
-      dest=box[i];
-      i=21;
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	dest=box[i];
+	i=21;
+      }
     }
   }
   if(dest==nullptr){
     cout<<"There is no Node by that name."<<endl;
     return;
+  }
+  if(origin==dest){
+    cout<<"You cannot make a connection to yourself."<<endl;
   }
   cout<<"Please input the distance between the two in generic units."<<endl;
   bool acin=false;
@@ -442,21 +468,72 @@ void cutNode(node** box){
   cout<<"Please input the name of the node to be removed."<<endl;
   getStringFromInput(newName);
   node* deadMeat = nullptr;
+  int index = -1;
   for(int i=0; i<20; i++){
-    if(strcmp(box[i],newName)==0){
-      deadMeat=box[i];
-      i=21;
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	deadMeat=box[i];
+	index = i;
+	i=21;
+      }
     }
   }
-  if(dest==nullptr){
+  if(deadMeat==nullptr){
     cout<<"There is no Node by that name."<<endl;
     return;
   }
   for(int i=0; i<20; i++){
-    box[i]->cutConnection();
+    if(box[i]!=nullptr){
+      box[i]->cutConnection(deadMeat,false);
+    }
+  }
+  delete deadMeat;
+  box[index]=nullptr;
+  for(int i=0; i<19; i++){
+    if(box[i]==nullptr){
+      if(box[i+1]!=nullptr){
+	box[i] = box[i+1];
+	box[i+1] = nullptr;
+      }
+    }
   }
 }
 
 void cutConnection(node** box){
-
+  printBox(box);
+  char* newName = new char[16];
+  for(int i=0; i<16; i++){
+    newName[i]='\0';
+  }
+  cout<<"Please input the name of the node from which the connection is to be cut."<<endl;
+  getStringFromInput(newName);
+  node* Orig = nullptr;
+  for(int i=0; i<20; i++){
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	Orig=box[i];
+	i=21;
+      }
+    }
+  }
+  if(Orig==nullptr){
+    cout<<"There is no Node by that name."<<endl;
+    return;
+  }
+  cout<<"Please input the name of the destination node for the cut connection"<<endl;
+  getStringFromInput(newName);
+  node* Targ = nullptr;
+  for(int i=0; i<20; i++){
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	Targ=box[i];
+	i=21;
+      }
+    }
+  }
+  if(Targ==nullptr){
+    cout<<"There is no Node by that name."<<endl;
+    return;
+  }
+  Orig->cutConnection(Targ);
 }
