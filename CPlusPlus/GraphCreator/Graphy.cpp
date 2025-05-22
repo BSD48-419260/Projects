@@ -10,7 +10,6 @@ struct node{
     for(int i=0; i<16; i++){
       name[i] = '\0';
     }
-    lowestFromRoute = nullptr;
     connectionNum =0;
     conVal = nullptr;
     connections = nullptr;
@@ -31,14 +30,6 @@ struct node{
       name[i]='\0';
     }
     strncpy(name, newName, 15);
-  }
-  
-  node* getLowest(){
-    return lowestFromRoute;
-  }
-  
-  void setLowest(node* newLowest){
-    lowestFromRoute = newLowest;
   }
 
   void addConnection(int newVal, node* newConnect, bool check = true){
@@ -144,10 +135,20 @@ struct node{
     }
     return -1;
   }
-  
+
+  int getNumberOfConnections(){
+    return connectionNum;
+  }
+
+  node** getConnections(){
+    return connections;
+  }
+
+  int* getConnectionValues(){
+    return conVal;
+  }
  private:
   char* name = new char[21];
-  node* lowestFromRoute = nullptr;
   int connectionNum =0;
   int* conVal = nullptr;
   node** connections = nullptr;
@@ -164,9 +165,14 @@ void addConnection(node** box);
 int getInt();
 void cutNode(node** box);
 void cutConnection(node** box);
+void findPath(node** box);
+void Dijkstra(node** box, node* origin, node* target);
+int getIndex(node* toTest, node** box);
+void printPath(int* dists, int* shortBox, node** box, int target);
 
 //main.
 int main(){
+  //technically having 20 be a prefined number is unnecesary, but I'm working on a deadline so...
   node** box = new node*[20];
   for(int i=0; i<20; i++){
     box[i]=nullptr;
@@ -209,7 +215,7 @@ int main(){
       }else if (strcmp(inpstring,"CUT")==0){
         cutConnection(box);
       }else if (strcmp(inpstring,"PATH")==0){
-        cout<<"Working on this one. does nothing for now..."<<endl;
+	findPath(box);        
       }else if (strcmp(inpstring,"PRINT")==0){
 	cout<<"Names:"<<endl;
 	printBox(box);
@@ -254,7 +260,7 @@ int main(){
   return 0; 
 }
 
-//string getter. techically only needed once but I just really like having it.
+//string getter.
 void getStringFromInput(char* inpstring){
   char bufferarray [16];
   //make sure it works
@@ -380,7 +386,7 @@ void addNode(node** box){
       }
       node* theodore = new node();
       theodore->setName(namestr);
-      delete namestr;
+      delete[] namestr;
       box[i]=theodore;
       return;
     }
@@ -439,6 +445,7 @@ void addConnection(node** box){
     }
   }
   origin->addConnection(value, dest);
+  delete[] newName;
 }
 
 
@@ -497,6 +504,7 @@ void cutNode(node** box){
       }
     }
   }
+  delete[] newName;
 }
 
 void cutConnection(node** box){
@@ -536,4 +544,108 @@ void cutConnection(node** box){
     return;
   }
   Orig->cutConnection(Targ);
+  delete[] newName;
+}
+
+void findPath(node** box){
+  printBox(box);
+  char* newName = new char[16];
+  for(int i=0; i<16; i++){
+    newName[i]='\0';
+  }
+  cout<<"Please input the name of node to start the path at."<<endl;
+  getStringFromInput(newName);
+  node* origin = nullptr;
+  for(int i=0; i<20; i++){
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	origin=box[i];
+	i=21;
+      }
+    }
+  }
+  if(origin==nullptr){
+    cout<<"There is no node by that name."<<endl;
+    return;
+  }
+  cout<<"Please input the name of the destination node."<<endl;
+  getStringFromInput(newName);
+  node* dest = nullptr;
+  for(int i=0; i<20; i++){
+    if(box[i]!=nullptr){
+      if(strcmp(box[i]->getName(),newName)==0){
+	dest=box[i];
+	i=21;
+      }
+    }
+  }
+  if(dest==nullptr){
+    cout<<"There is no Node by that name."<<endl;
+    return;
+  }
+  delete[] newName;
+  Dijkstra(box, origin, dest);
+  
+}
+
+void Dijkstra(node** box, node* origin, node* target){
+  int* dist = new int[20];
+  int* shortestPrev = new int[20];
+  bool* explored = new bool[20];
+  for(int i=0; i<20; i++){
+    dist[i]=-1;
+    shortestPrev[i] = -1;
+    explored[i] = false;
+  }
+  int originIndex = getIndex(origin, box);
+  int targetIndex = getIndex(target, box);
+  dist[originIndex]=0;
+  while(!explored[targetIndex]){
+    int lowestIndex = 0;
+    for(int i=0; i<20; i++){
+      if(((dist[i]<dist[lowestIndex])&&(dist[i]!=-1))||(dist[lowestIndex]==-1)){
+	if(explored[i]=false){
+	  lowestIndex=i;
+	}
+      }
+    }
+    if(explored[lowestIndex]==true){
+      cout<<"Error! No path found."<<endl;
+    }
+    explored[lowestIndex]=true;
+    if(lowestIndex=targetIndex){
+      cout<<"Path found!"<<endl;
+      printPath(dist, shortestPrev, box, targetIndex);
+      cout<<"leading to -wait no, that's our destination!"<<endl;
+    }else{
+      for(int i=0; i<box[lowestIndex]->getNumberOfConnections();i++){
+	int conIndex = getIndex(box[lowestIndex]->getConnections()[i],box);
+	if((dist[conIndex]==-1)||(dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i] < dist[conIndex])){
+	    dist[conIndex]=dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i];
+	    shortestPrev[conIndex]=conIndex;
+	}
+      }
+    }
+  }
+  delete[] dist;
+  delete[] shortestPrev;
+  delete[] explored;
+}
+
+int getIndex(node* toTest, node** box){
+  for(int i=0; i<20; i++){
+    if(box[i]==toTest){
+      return i;
+    }
+  }
+  return -1;
+}
+
+void printPath(int* dists, int* shortBox,node** box, int target){
+  printPath(dists, shortBox, box, shortBox[target]);
+  if(shortBox[target]!=-1){
+    cout<<"leading to "<<box[target]->getName()<<", which is "<<dists[target]<<" from the origin, with a path"<< endl;
+  }else{
+    cout<<box[target]->getName()<<", which is the the origin, has a path ";
+  }
 }
