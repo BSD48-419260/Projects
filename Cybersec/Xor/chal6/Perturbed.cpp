@@ -1,0 +1,352 @@
+#include<iostream>
+#include<cstring>
+#include<cctype>
+#include<cmath>
+#include<cfloat>
+using namespace std;
+
+
+int getPosNonZeroInt();
+void getBigStringFromInput(char* inpstring);
+void getStringFromInput(char* inpstring);
+int getIndexOfLastNonNullChar(char* inpstring, int length);
+void ASCIIToBin(bool* bindump, bool big = false);
+void ASCIIBinTranslate(bool* bindump, char* string);
+void BinToHex(bool* bindump, char* hex);
+double FreqCheck(char* sequence);
+void boolIncrement(bool* numb, int len);
+int lastOneInBools(bool* numb, int length);
+int HammingDist(bool* one, bool* two, int max);
+
+int main(){
+  cout<<"Please insert guessed key length (probably between 2 and 40)."<<endl;
+  int keysize = getPosNonZeroInt();
+  
+  //prepare bindump
+  bool* bindumpA = new bool[1600];
+  bool* bindumpB = new bool[1600];
+  bool* xordump = new bool[1600];
+  ASCIIToBin(bindumpA);
+
+  int last = lastOneInBools(bindumpA, 1600);
+  last = (floor(last/8)+1)*8;
+  
+  for(int i=0; i<last; i++){
+    cout<<bindumpA[i];
+  }
+  cout<<endl;
+  
+  ASCIIToBin(bindumpB);
+  last = lastOneInBools(bindumpB, 1600);
+  last = (floor(last/8)+1)*8;
+  for(int i=0; i<last; i++){
+    cout<<bindumpB[i];
+  }
+  cout<<endl;
+
+  cout<<"Ham: "<<HammingDist(bindumpA,bindumpB,1600);
+
+  int* minDists = new int[4];
+  double* minEditVals = new double[4];
+  for(int i=0; i<4; i++){
+    minDists[i]=0;
+    minEditVals[i]=DBL_MAX;
+  }
+  bool* smallA =nullptr;
+  bool* smallB =nullptr;
+  for(int i=1; i<=keysize; i++){
+    delete smallA;
+    delete smallB;
+    int guessbit = i*8;
+    smallA = new bool[guessbit];
+    smallB = new bool[guessbit];
+    for(int j=0; j<guessbit; j++){
+      smallA[j]=bindumpA[j];
+      smallB[j]=bindumpB[j];
+    }
+    int dist = HammingDist(smallA,smallB,guessbit);
+    double normdist = double(dist)/i;
+    for(int j=0; j<4; j++){
+      if(normdist<minEditVals[j]){
+	minEditVals[j]=normdist;
+	minDists[j]=i;
+	j=5;
+      }
+    }
+    cout<<"Keysize: "<<i<<", Dist: "<<dist<<", Normdist: "<<normdist<<endl;
+  }
+  for(int i=0; i<4; i++){
+    cout<<"minDist: "<<minEditVals[i]<<", Val: "<<minDists[i]<<endl;
+  }
+  
+  
+  return 0;  
+}
+
+int getPosNonZeroInt(){
+  bool acin=false;
+  int Integ;
+  while (acin==false){
+    cout<<"A positive, non-zero whole number, please: "<<endl;
+    cin>>Integ;
+    if(cin.fail()){
+      cout<<"I think you did something wrong. please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      if(Integ>0){
+	acin=true;
+      }else{
+	cout<<"The number needs to be postive and non-zero."<<endl;
+      }
+    }
+  }
+  cin.ignore(100000,'\n');
+  return Integ;
+}
+
+void getBigStringFromInput(char* inpstring){
+  char bufferarray [201];
+  //Ensure Valid Input.
+  bool acin;
+  for(int i=0;i<201;i++){
+    inpstring[i]='\0';
+  }
+  int last=0;
+  bool moreLines = true;
+  cout<<"200 characters or less, please."<<endl;
+  while(moreLines){
+    for(int i=0;i<201;i++){
+      bufferarray[i]='\0';
+    }
+    acin=false;
+    while(acin==false){
+      cout<<"(IAMWHOIAM!)"<<endl;
+      cin.getline(bufferarray, sizeof(bufferarray),'\n');
+      if(bufferarray[0]=='\0'){
+	moreLines=false;
+      }
+      //being robust.
+      if(cin.fail()){
+	cout<<"I think you did something wrong. Please try again."<<endl;
+	cin.clear();
+	cin.ignore(100000,'\n');
+      }else{
+	acin=true;
+      }
+    }
+    
+    if(moreLines){
+      if(last!=0){
+        inpstring[getIndexOfLastNonNullChar(inpstring, 200)+1]='\n';
+	last++;
+      }
+      strncat(inpstring, bufferarray, 200-last);
+      last=getIndexOfLastNonNullChar(inpstring, 200);
+    }
+    if(last>=200){
+      inpstring[200]='\0';
+      cout<<endl;
+      return;
+    }
+  }
+  inpstring[200]='\0';
+  cout<<endl;
+  return;
+}
+
+void getStringFromInput(char* inpstring){
+  char bufferarray [201];
+  //make sure it works
+  bool acin=false;
+  for(int i=0;i<201;i++){
+    bufferarray[i]='\0';
+  }
+  while(acin==false){
+    cout<<"200 characters or less, please."<<endl;
+    cin.getline(bufferarray, sizeof(bufferarray),'\n');
+    //being robust.
+    if(cin.fail()){
+      cout<<"I think you did something wrong. Please try again."<<endl;
+      cin.clear();
+      cin.ignore(100000,'\n');
+    }else{
+      acin=true;
+    }
+  }
+  strncpy(inpstring, bufferarray, 200);
+  inpstring[200]='\0';
+  cout<<endl;
+  return;
+}
+
+int getIndexOfLastNonNullChar(char* inpstring, int length){
+  for(int i=0; i<length; i++){
+    if(inpstring[i]=='\0'){
+      return i-1;
+    }
+  }
+  return -1;
+}
+
+void ASCIIToBin(bool* bindump, bool big){
+  char* inpstring = new char[201];
+  for(int i=0; i<201; i++){
+    inpstring[i]='\0';
+  }
+  cout<<"Please Insert ASCII Text."<<endl;
+  //get text
+  if(big){
+    getBigStringFromInput(inpstring);
+  }else{
+    getStringFromInput(inpstring);
+  }
+  cout<<"(IAMWHOIAM)";
+  for(int i=0; i<200; i++){
+    cout<<inpstring[i];
+  }
+  cout<<endl;
+  cout<<"(IAMWHOIAM)|";
+  for(int i=0; i<200; i++){
+    cout<<int(inpstring[i])<<'|';
+  }
+  cout<<endl;
+  ASCIIBinTranslate(bindump, inpstring);
+  delete inpstring;
+  return;
+}
+
+void ASCIIBinTranslate(bool* bindump, char* string){
+  for(int i=0; i<1600; i++){
+    bindump[i]=0;
+  }
+  int lastindex = getIndexOfLastNonNullChar(string, 201);
+  //perform ASCII-To-Bin
+  for(int i=0; i<lastindex+1; i++){
+    int intvalue = string[i];
+    if(intvalue>=128){
+      bindump [(8*i)+0] = 1;
+      intvalue-=128;
+    }
+    if(intvalue>=64){
+      bindump [(8*i)+1] = 1;
+      intvalue-=64;
+    }
+    if(intvalue>=32){
+      bindump [(8*i)+2] = 1;
+      intvalue-=32;
+    }
+    if(intvalue>=16){
+      bindump [(8*i)+3] = 1;
+      intvalue-=16;
+    }
+    if(intvalue>=8){
+      bindump [(8*i)+4] = 1;
+      intvalue-=8;
+    }
+    if(intvalue>=4){
+      bindump [(8*i)+5] = 1;
+      intvalue-=4;
+    }
+    if(intvalue>=2){
+      bindump [(8*i)+6] = 1;
+      intvalue-=2;
+    }
+    bindump [(8*i)+7] = intvalue;
+  }
+}
+
+
+void BinToHex(bool* bindump, char* hex){
+  //perform Bin-To-Hex
+  for(int i=0; i<401; i++){
+    hex[i]='\0';
+  }
+  char hexchars[17] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f','\0'};
+  cout<<"(IAMWHOIAM)|";
+  for(int i=0; i<400; i++){
+    int bindex=0;
+    if(bindump[4*i+3]){
+      bindex=bindex+1;
+    }
+    if(bindump[4*i+2]){
+      bindex=bindex+2;
+    }
+    if(bindump[4*i+1]){
+      bindex=bindex+4;
+    }
+    if(bindump[4*i+0]){
+      bindex=bindex+8;
+    }
+    //cout<<"index: "<<bindex<<" Char: "<<hexchars[bindex]<<endl;
+    hex[i]=hexchars[bindex];
+    cout<<bindex<<'|';
+  }
+  cout<<endl;
+}
+
+//takes the expected frequency. Subtracts the true, then takes the abs value. divides by charcount to keep small-char values from dominating.
+double FreqCheck(char* sequence){
+  //part of expected frequency.
+  double freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
+  double* counts = new double[26];
+  for(int i=0; i<26; i++){
+    counts[i]=0;
+  }
+  bool nulter = false;
+  int i=0;
+  double charcount=0;
+  //getting observed frequency. will use charcount to calc expected frequency.
+  while(nulter==false){
+    if(sequence[i]!='\0'){
+      if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
+        counts[tolower(sequence[i])-97]++;
+        charcount+=1;
+      }
+      i++;
+    }else{
+      nulter=true;
+    }
+  }
+  cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
+  if(charcount==0){
+    return DBL_MAX;
+  }
+  double value = 0;
+  for(int g=0; g<26; g++){
+    value+=(abs((freqs[g]*charcount)-counts[g])/charcount);
+  }
+  delete counts;
+  return value;
+}
+
+void boolIncrement(bool* numb, int len){
+  for(int i=0; i<len; i++){
+    if(numb[i]){
+      numb[i]=false;
+    }else{
+      numb[i]=true;
+      i=len;
+    }
+  }
+}
+
+int lastOneInBools(bool* numb, int length){
+  int box = -1;
+  for(int i=0; i<length; i++){
+    if(numb[i]){
+      box=i;
+    }
+  }
+  return box;
+}
+
+int HammingDist(bool* one, bool* two, int max){
+  int last = min(lastOneInBools(one, max),lastOneInBools(two, max));
+  last = (floor(last/8)+1)*8;
+  int difs=0;
+  for(int i=0; i<last; i++){
+    difs+=(one[i]!=two[i]);
+  }
+  return difs;
+}
