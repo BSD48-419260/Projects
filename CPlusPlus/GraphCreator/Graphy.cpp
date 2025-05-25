@@ -601,28 +601,42 @@ void Dijkstra(node** box, node* origin, node* target){
   int targetIndex = getIndex(target, box);
   dist[originIndex]=0;
   while(!explored[targetIndex]){
-    int lowestIndex = 0;
+    int lowestIndex = -1;
     for(int i=0; i<20; i++){
-      if(((dist[i]<dist[lowestIndex])&&(dist[i]!=-1))||(dist[lowestIndex]==-1)){
-	if(explored[i]=false){
+      if(box[i]!=nullptr){
+	cout<<"Cell: "<<i<<", Name: "<<box[i]->getName()<<", Explored: "<<explored[i]<<", Dist: "<<dist[i]<<", shorestPrev: "<<shortestPrev[i]<<endl;
+      }
+    }
+    for(int i=0; i<20; i++){
+      if(box[i]!=nullptr){
+	cout<<i<<", "<<box[i]->getName()<<". "<<(dist[i]<dist[lowestIndex])<<" AND "<<(dist[i]!=-1)<<" AND "<<(explored[i]==false)<<endl;
+	if((lowestIndex==-1)&&(dist[i]!=-1)&&(explored[i]==false)){
 	  lowestIndex=i;
+	}else{
+	  if((dist[i]<dist[lowestIndex])&&(dist[i]!=-1)&&(explored[i]==false)){
+	    lowestIndex=i;
+	  }
 	}
       }
     }
+    cout<<"LowestIndex: "<<lowestIndex<<endl;
     if(explored[lowestIndex]==true){
       cout<<"Error! No path found."<<endl;
+      explored[targetIndex]=true;
     }
     explored[lowestIndex]=true;
-    if(lowestIndex=targetIndex){
+    if(lowestIndex==targetIndex){
       cout<<"Path found!"<<endl;
       printPath(dist, shortestPrev, box, targetIndex);
       cout<<"leading to -wait no, that's our destination!"<<endl;
     }else{
+      cout<<"NumberOfCons: "<<box[lowestIndex]->getNumberOfConnections()<<endl;
       for(int i=0; i<box[lowestIndex]->getNumberOfConnections();i++){
 	int conIndex = getIndex(box[lowestIndex]->getConnections()[i],box);
+	cout<<"LowIndex"<<lowestIndex<<", "<<box[lowestIndex]->getName()<<"ConIndex: "<<conIndex<<", "<<box[conIndex]->getName()<<endl;
 	if((dist[conIndex]==-1)||(dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i] < dist[conIndex])){
 	    dist[conIndex]=dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i];
-	    shortestPrev[conIndex]=conIndex;
+	    shortestPrev[conIndex]=lowestIndex;
 	}
       }
     }
@@ -642,10 +656,15 @@ int getIndex(node* toTest, node** box){
 }
 
 void printPath(int* dists, int* shortBox,node** box, int target){
-  printPath(dists, shortBox, box, shortBox[target]);
+  if(target!=-1){
+    printPath(dists, shortBox, box, shortBox[target]);
+  }else{
+    cout<<"NULL!"<<endl;
+    return;
+  }
   if(shortBox[target]!=-1){
     cout<<"leading to "<<box[target]->getName()<<", which is "<<dists[target]<<" from the origin, with a path"<< endl;
   }else{
-    cout<<box[target]->getName()<<", which is the the origin, has a path ";
+    cout<<box[target]->getName()<<", which is the the origin, has a path "<<endl;
   }
 }
