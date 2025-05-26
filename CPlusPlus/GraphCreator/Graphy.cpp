@@ -463,6 +463,7 @@ int getInt(){
       acin=true;
     }
   }
+  cin.ignore(100000,'\n');
   return Integ;
 }
 
@@ -604,12 +605,12 @@ void Dijkstra(node** box, node* origin, node* target){
     int lowestIndex = -1;
     for(int i=0; i<20; i++){
       if(box[i]!=nullptr){
-	cout<<"Cell: "<<i<<", Name: "<<box[i]->getName()<<", Explored: "<<explored[i]<<", Dist: "<<dist[i]<<", shorestPrev: "<<shortestPrev[i]<<endl;
+	//cout<<"Cell: "<<i<<", Name: "<<box[i]->getName()<<", Explored: "<<explored[i]<<", Dist: "<<dist[i]<<", shorestPrev: "<<shortestPrev[i]<<endl;
       }
     }
     for(int i=0; i<20; i++){
       if(box[i]!=nullptr){
-	cout<<i<<", "<<box[i]->getName()<<". "<<(dist[i]<dist[lowestIndex])<<" AND "<<(dist[i]!=-1)<<" AND "<<(explored[i]==false)<<endl;
+	//cout<<i<<", "<<box[i]->getName()<<". "<<(dist[i]<dist[lowestIndex])<<" AND "<<(dist[i]!=-1)<<" AND "<<(explored[i]==false)<<endl;
 	if((lowestIndex==-1)&&(dist[i]!=-1)&&(explored[i]==false)){
 	  lowestIndex=i;
 	}else{
@@ -619,9 +620,9 @@ void Dijkstra(node** box, node* origin, node* target){
 	}
       }
     }
-    cout<<"LowestIndex: "<<lowestIndex<<endl;
+    //cout<<"LowestIndex: "<<lowestIndex<<endl;
     if(explored[lowestIndex]==true){
-      cout<<"Error! No path found."<<endl;
+      //cout<<"Error! No path found."<<endl;
       explored[targetIndex]=true;
     }
     explored[lowestIndex]=true;
@@ -630,10 +631,10 @@ void Dijkstra(node** box, node* origin, node* target){
       printPath(dist, shortestPrev, box, targetIndex);
       cout<<"leading to -wait no, that's our destination!"<<endl;
     }else{
-      cout<<"NumberOfCons: "<<box[lowestIndex]->getNumberOfConnections()<<endl;
+      //cout<<"NumberOfCons: "<<box[lowestIndex]->getNumberOfConnections()<<endl;
       for(int i=0; i<box[lowestIndex]->getNumberOfConnections();i++){
 	int conIndex = getIndex(box[lowestIndex]->getConnections()[i],box);
-	cout<<"LowIndex"<<lowestIndex<<", "<<box[lowestIndex]->getName()<<"ConIndex: "<<conIndex<<", "<<box[conIndex]->getName()<<endl;
+	//cout<<"LowIndex"<<lowestIndex<<", "<<box[lowestIndex]->getName()<<"ConIndex: "<<conIndex<<", "<<box[conIndex]->getName()<<endl;
 	if((dist[conIndex]==-1)||(dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i] < dist[conIndex])){
 	    dist[conIndex]=dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i];
 	    shortestPrev[conIndex]=lowestIndex;
@@ -659,7 +660,7 @@ void printPath(int* dists, int* shortBox,node** box, int target){
   if(target!=-1){
     printPath(dists, shortBox, box, shortBox[target]);
   }else{
-    cout<<"NULL!"<<endl;
+    //cout<<"NULL!"<<endl;
     return;
   }
   if(shortBox[target]!=-1){
