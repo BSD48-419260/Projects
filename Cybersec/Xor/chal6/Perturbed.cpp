@@ -23,28 +23,17 @@ int main(){
   int keysize = getPosNonZeroInt();
   
   //prepare bindump
-  bool* bindumpA = new bool[1600];
-  bool* bindumpB = new bool[1600];
+  bool* bindump = new bool[1600];
   bool* xordump = new bool[1600];
-  ASCIIToBin(bindumpA);
 
-  int last = lastOneInBools(bindumpA, 1600);
+  ASCIIToBin(bindump);
+  int last = lastOneInBools(bindump, 1600);
   last = (floor(last/8)+1)*8;
   
   for(int i=0; i<last; i++){
-    cout<<bindumpA[i];
+    cout<<bindump[i];
   }
   cout<<endl;
-  
-  ASCIIToBin(bindumpB);
-  last = lastOneInBools(bindumpB, 1600);
-  last = (floor(last/8)+1)*8;
-  for(int i=0; i<last; i++){
-    cout<<bindumpB[i];
-  }
-  cout<<endl;
-
-  cout<<"Ham: "<<HammingDist(bindumpA,bindumpB,1600);
 
   int* minDists = new int[4];
   double* minEditVals = new double[4];
@@ -52,20 +41,38 @@ int main(){
     minDists[i]=0;
     minEditVals[i]=DBL_MAX;
   }
+  
   bool* smallA =nullptr;
   bool* smallB =nullptr;
-  for(int i=1; i<=keysize; i++){
+  bool* smallC =nullptr;
+  bool* smallD =nullptr;
+  for(int i=1; i<=min(keysize,last/32); i++){
     delete smallA;
     delete smallB;
+    delete smallC;
+    delete smallD;
     int guessbit = i*8;
     smallA = new bool[guessbit];
     smallB = new bool[guessbit];
+    smallC = new bool[guessbit];
+    smallD = new bool[guessbit];
     for(int j=0; j<guessbit; j++){
-      smallA[j]=bindumpA[j];
-      smallB[j]=bindumpB[j];
+      smallA[j]=bindump[j];
+      smallB[j]=bindump[guessbit+j];
+      smallC[j]=bindump[guessbit*2+j];
+      smallD[j]=bindump[guessbit*3+j];
     }
-    int dist = HammingDist(smallA,smallB,guessbit);
-    double normdist = double(dist)/i;
+    int dist = 0;
+
+    dist = dist + HammingDist(smallA,smallB,guessbit);
+    dist = dist + HammingDist(smallA,smallC,guessbit);
+    dist = dist + HammingDist(smallA,smallD,guessbit);
+    dist = dist + HammingDist(smallB,smallC,guessbit);
+    dist = dist + HammingDist(smallB,smallD,guessbit);
+    dist = dist + HammingDist(smallC,smallD,guessbit);
+    
+    double normdist = (double(dist)/6)/i;
+
     for(int j=0; j<4; j++){
       if(normdist<minEditVals[j]){
 	minEditVals[j]=normdist;
@@ -73,6 +80,7 @@ int main(){
 	j=5;
       }
     }
+    
     cout<<"Keysize: "<<i<<", Dist: "<<dist<<", Normdist: "<<normdist<<endl;
   }
   for(int i=0; i<4; i++){
