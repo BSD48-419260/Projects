@@ -29,7 +29,7 @@ int main(){
   ASCIIToBin(bindump);
   int last = lastOneInBools(bindump, 1600);
   last = (floor(last/8)+1)*8;
-  
+  cout<<"Last: "<<last<<endl;
   for(int i=0; i<last; i++){
     cout<<bindump[i];
   }
@@ -72,21 +72,38 @@ int main(){
     dist = dist + HammingDist(smallC,smallD,guessbit);
     
     double normdist = (double(dist)/6)/i;
-
+    int editmax=0;
     for(int j=0; j<4; j++){
-      if(normdist<minEditVals[j]){
-	minEditVals[j]=normdist;
-	minDists[j]=i;
-	j=5;
+      if(minEditVals[editmax]<minEditVals[j]){
+	editmax=j;
       }
+    }
+    if(minEditVals[editmax]>normdist){
+      minEditVals[editmax]=normdist;
+      minDists[editmax]=i;
     }
     
     cout<<"Keysize: "<<i<<", Dist: "<<dist<<", Normdist: "<<normdist<<endl;
   }
+
+  int trumin = 0;
   for(int i=0; i<4; i++){
     cout<<"minDist: "<<minEditVals[i]<<", Val: "<<minDists[i]<<endl;
+    if(minEditVals[trumin]<minEditVals[i]){
+      trumin=i;
+    }
   }
-  
+  trumin=minDists[trumin]; //trumin is estimated key length.
+  int numchars = floor((last/8)/trumin)+1; // last/8 is the number of chars.
+  //numbchars is the max number of characters in every block. 
+  bool** transposeBuffer = new bool**[trumin][numchars*8];
+  for(int i=0; i<trumin; i++){
+    for(int j=0; j<numchars; j++){
+      for(int l=0; l<8; l++){
+	transposeBuffer[i][j*8+l]=bindump[i+j*6+l];
+      }
+    }
+  }
   
   return 0;  
 }
