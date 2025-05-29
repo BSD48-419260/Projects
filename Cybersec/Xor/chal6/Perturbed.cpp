@@ -311,7 +311,7 @@ int getIndexOfLastNonNullChar(char* inpstring, int length){
 
 void scrubNewlines(char* outstring, char* instring, int max){
   bool checkmax=(max!=0);
-  bool negated=fase;
+  bool negated=false;
   int offset = 0;
   int i=0;
   while (!negated){
@@ -411,7 +411,7 @@ int Baseified(char becomeBase){
 }
 
 //*
-void BaseToBin(bool* bindump, bool big = false){
+void BaseToBin(bool* bindump, bool big){
   char* inpstring = new char[12501];
   for(int i=0; i<12501; i++){
     inpstring[i]='\0';
