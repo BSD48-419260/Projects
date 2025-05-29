@@ -99,7 +99,7 @@ int main(){
   //numbchars is the max number of characters in every block. 
   bool** transposeBuffer = new bool*[numblocks][numchars*8];
   for(int i=0; i<numblocks; i++){
-    for(int j=0; j<numchars; j++){
+    for(int j=0; j<(numchars); j++){
       for(int l=0; l<8; l++){
 	transposeBuffer[i][j*8+l]=bindump[8*(i+j*6)+l];
       }
@@ -107,7 +107,7 @@ int main(){
   }
   int sam;
   for(int i=0; i<numblocks; i++){
-    sam = singXor(transposeBuffer[i], numchars*8);
+    sam = singXor(transposeBuffer[i], (numchars-(((last/8)-1)<(i+j*6)))*8);
   }
   
   return 0;  
@@ -381,15 +381,15 @@ int HammingDist(bool* one, bool* two, int max){
   return difs;
 }
 
-void singXor(bool* numb, int len, char* outstr){
+int singXor(bool* numb, int len){
+  double value = DBL_MAX;
+  int key;
   bool h=true;
   int count=0;
   while(h){
     g=0;
     count++;
     notdone=true;
-    HexToBin(bindumpA);
-    
     if(bindumpA[402]){
       h=false;
     }else{
