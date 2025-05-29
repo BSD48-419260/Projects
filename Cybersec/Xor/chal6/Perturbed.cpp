@@ -17,7 +17,7 @@ double FreqCheck(char* sequence);
 void boolIncrement(bool* numb, int len);
 int lastOneInBools(bool* numb, int length);
 int HammingDist(bool* one, bool* two, int max);
-int singXor(bool* numb, int len);
+bool* singXor(bool* box, int len);
 
 int main(){
   cout<<"Please insert guessed key length (probably between 2 and 40)."<<endl;
@@ -25,8 +25,6 @@ int main(){
   
   //prepare bindump
   bool* bindump = new bool[1600];
-  bool* xordump = new bool[1600];
-
   ASCIIToBin(bindump);
   int last = lastOneInBools(bindump, 1600);
   last = (floor(last/8)+1)*8;
@@ -97,18 +95,28 @@ int main(){
   int numblocks=minDists[trumin]; //numblocks is estimated key length.
   int numchars = floor((last/8)/numblocks)+1; // last/8 is the number of chars.
   //numbchars is the max number of characters in every block. 
-  bool** transposeBuffer = new bool*[numblocks][numchars*8];
+  bool** transposeBuffer = new bool*[numblocks];
   for(int i=0; i<numblocks; i++){
-    for(int j=0; j<numchars; j++){
+    transposeBuffer[i] = new bool[(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks)))))*8];
+  }
+  for(int i=0; i<numblocks; i++){
+    for(int j=0; j<(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))); j++){
       for(int l=0; l<8; l++){
 	transposeBuffer[i][j*8+l]=bindump[8*(i+j*6)+l];
       }
     }
   }
-  int sam;
+  bool** keys = new bool*[numblocks];
   for(int i=0; i<numblocks; i++){
-    sam = singXor(transposeBuffer[i], numchars*8);
+    keys[i] = singXor(transposeBuffer[i], (numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))));
   }
+  cout<<"Keys found."<<endl;
+  bool* xordump = new bool[1600];
+  
+  for(int i=0; i<last; i++){
+    xordump[i]=(numb[i]!=key[i%8]);
+  }
+  
   
   return 0;  
 }
@@ -381,104 +389,85 @@ int HammingDist(bool* one, bool* two, int max){
   return difs;
 }
 
-void singXor(bool* numb, int len, char* outstr){
-  bool h=true;
-  int count=0;
-  while(h){
-    g=0;
-    count++;
-    notdone=true;
-    HexToBin(bindumpA);
-    
-    if(bindumpA[402]){
-      h=false;
-    }else{
-      
-      for(int i=0; i<8; i++){
-	key[i]=0;
-      }
-      //actual translation setup
-      while(notdone){
-	cout<<"Count: "<<count<<" Key: "<<g<<endl;
-	for(int i=0; i<403; i++){
-	  if(bindumpA[i]==key[i%8]){
-	    xordump[i]=0;
-	  }else{
-	    xordump[i]=1;
-	  }
-	}
-	for(int i=0; i<51; i++){
-	  sequence[i]='\0';
-	}
-	bool isvalid=true;
-	for(int i=0; i<50; i++){
-	  int bindex=0;
-	  if(xordump[8*i]){
-	    bindex=bindex+1;
-	  }
-	  if(xordump[8*i+1]){
-	    bindex=bindex+2;
-	  }
-	  if(xordump[8*i+2]){
-	    bindex=bindex+4;
-	  }
-	  if(xordump[8*i+3]){
-	    bindex=bindex+8;
-	  }
-	  if(xordump[8*i+4]){
-	    bindex=bindex+16;
-	  }
-	  if(xordump[8*i+5]){
-	    bindex=bindex+32;
-	  }
-	  if(xordump[8*i+6]){
-	    bindex=bindex+64;
-	  }
-	  if(xordump[8*i+7]){
-	    bindex=bindex+128;
-	  }
-	  if(bindex<=128){
-	    sequence[i]=static_cast<char>(bindex);
-	  }else{
-	    i=51;
-	    isvalid=false;
-	  }
-	}
-	if(isvalid){
-	  double freqsec = FreqCheck(sequence);
-	  if(freqsec!=0){
-	    int maxindex;
-	    double max=-1;
-	    for(int i=0; i<10; i++){
-	      if(values[i]>max){
-		max = values[i];
-		maxindex = i;
-	      }
-	    }
-	    if(freqsec<values[maxindex]){
-	      strncpy(sequences[maxindex],sequence,50);
-	      values[maxindex] = freqsec;
-	      indexofseq[maxindex] = count; 
-	      keyofseq[maxindex] = g;
-	    }
-	  }
-	}
-	boolIncrement(key,8);
-	g++;
-	notdone=(g!=256);
-      }
-    }
+bool* singXor(bool* box, int len){
+  bool* xordump = new bool[len];
+  char* sequence = new char[(len/8)+1];
+  double value = DBL_MAX;
+  int keyAsInt;
+  bool* key = new bool[8];
+  bool* bestkey = new bool[8];
+  for(int i=0; i<8; i++){
+    key[i]=0;
+    bestkey[i]=0;
   }
-  
-  cout<<"Best 10 sequences are as follows: (please note, these are unsorted.)"<<endl;
-  for(int i=0; i<10; i++){
-    cout<<"Number "<<i+1<<":"<<endl;
-    cout<<"QSADETC: "<<values[i]<<endl;
-    cout<<"Count: "<<indexofseq[i]<<" Key: "<<keyofseq[i]<<endl;
-    cout<<"Backwards: "<<endl;
-    for(int j=0; j<50; j++){
-      cout<<sequences[i][49-j];
+  int g=0;
+  bool notdone=true;
+  //actual translation setup
+  while(notdone){
+    cout<<"Key: "<<g<<" ";
+    for(int i=0; i<8; i++){
+      cout<<key[i];
     }
     cout<<endl;
+    for(int i=0; i<len; i++){
+      xordump[i]=(numb[i]!=key[i%8]);
+    }
+    for(int i=0; i<(len/8)+1; i++){
+      sequence[i]='\0';
+    }
+    bool isvalid=true;
+    for(int i=0; i<(len/8); i++){
+      int bindex=0;
+      if(xordump[8*i]){
+	bindex=bindex+1;
+      }
+      if(xordump[8*i+1]){
+	bindex=bindex+2;
+      }
+      if(xordump[8*i+2]){
+	bindex=bindex+4;
+      }
+      if(xordump[8*i+3]){
+	bindex=bindex+8;
+      }
+      if(xordump[8*i+4]){
+	bindex=bindex+16;
+      }
+      if(xordump[8*i+5]){
+	bindex=bindex+32;
+      }
+      if(xordump[8*i+6]){
+	bindex=bindex+64;
+      }
+      if(xordump[8*i+7]){
+	bindex=bindex+128;
+      }
+      if(bindex<=128){
+	sequence[i]=static_cast<char>(bindex);
+      }else{
+	i=(len/8)+1;
+	isvalid=false;
+      }
+    }
+    if(isvalid){
+      double freqsec = FreqCheck(sequence);
+      if(freqsec!=0){
+	if(freqsec<value){
+	  value = freqsec;
+	  keyAsInt = g;
+	  for(int i=0; i<8; i++){
+	    bestkey[i]=key[i];
+	  }
+	}
+      }
+    }
+    boolIncrement(key,8);
+    g++;
+    notdone=(g!=256);
   }
+  delete key;
+  delete sequence;
+  delete xordump;
+  
+  return keyAsInt;
 }
