@@ -10,8 +10,16 @@ int getPosNonZeroInt();
 void getBigStringFromInput(char* inpstring);
 void getStringFromInput(char* inpstring);
 int getIndexOfLastNonNullChar(char* inpstring, int length);
+
+void scrubNewlines(char* outstring, char* instring, int max);
+
 void ASCIIToBin(bool* bindump, bool big = false);
 void ASCIIBinTranslate(bool* bindump, char* string);
+
+int Baseified(char becomeBase);
+void BaseToBin(bool* bindump, bool big = false);
+void BaseBinTranslate(bool* bindump, char* string);
+
 void BinToHex(bool* bindump, char* hex);
 double FreqCheck(char* sequence);
 void boolIncrement(bool* numb, int len);
@@ -24,9 +32,9 @@ int main(){
   int keysize = getPosNonZeroInt();
   
   //prepare bindump
-  bool* bindump = new bool[1600];
+  bool* bindump = new bool[100000];
   ASCIIToBin(bindump);
-  int last = lastOneInBools(bindump, 1600);
+  int last = lastOneInBools(bindump, 100000);
   last = (floor(last/8)+1)*8;
   cout<<"Last: "<<last<<endl;
   for(int i=0; i<last; i++){
@@ -46,10 +54,10 @@ int main(){
   bool* smallC =nullptr;
   bool* smallD =nullptr;
   for(int i=1; i<=min(keysize,last/32); i++){
-    delete smallA;
-    delete smallB;
-    delete smallC;
-    delete smallD;
+    delete[] smallA;
+    delete[] smallB;
+    delete[] smallC;
+    delete[] smallD;
     int guessbit = i*8;
     smallA = new bool[guessbit];
     smallB = new bool[guessbit];
@@ -84,7 +92,13 @@ int main(){
     
     cout<<"Keysize: "<<i<<", Dist: "<<dist<<", Normdist: "<<normdist<<endl;
   }
-
+  delete[] smallA;
+  delete[] smallB;
+  delete[] smallC;
+  delete[] smallD;
+  delete[] minDists;
+  delete[] minEditVals;
+  
   int trumin = 0;
   for(int i=0; i<4; i++){
     cout<<"minDist: "<<minEditVals[i]<<", Val: "<<minDists[i]<<endl;
@@ -110,13 +124,81 @@ int main(){
   for(int i=0; i<numblocks; i++){
     keys[i] = singXor(transposeBuffer[i], (numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))));
   }
-  cout<<"Keys found."<<endl;
-  bool* xordump = new bool[1600];
-  
-  for(int i=0; i<last; i++){
-    xordump[i]=(numb[i]!=key[i%8]);
+  cout<<"Keys found. Suspected key: "<<endl;
+  bool* xordump = new bool[100000];
+  //*
+  for(int i=0; i<numblocks; i++){
+    int bindex=0;
+    if(keys[i][0]){
+      bindex=bindex+1;
+    }
+    if(keys[i][1]){
+      bindex=bindex+2;
+    }
+    if(keys[i][2]){
+      bindex=bindex+4;
+    }
+    if(keys[i][3]){
+      bindex=bindex+8;
+    }
+    if(keys[i][4]){
+      bindex=bindex+16;
+    }
+    if(keys[i][5]){
+      bindex=bindex+32;
+    }
+    if(keys[i][6]){
+      bindex=bindex+64;
+    }
+    if(keys[i][7]){
+      bindex=bindex+128;
+    }
+    cout<<static_cast<char>(bindex);
   }
-  
+  //*/
+  cout<<endl<<'|';
+  for(int i=0; i<numblocks;i++){
+    for(int j=0; j<8; j++){
+      cout<<keys[i][j];
+    }
+    cout<<'|';
+  }
+  cout<<endl;
+
+  for(int i=0; i<last; i++){
+    xordump[i]=(numb[i]!=keys[floor(i/8)%numblocks][i%8]);
+    cout<<xordump[i];
+  }
+  cout<<endl;
+  cout<<"Suspected solution:"<<endl;
+  for(int i=0; i<last/8; i++){
+    int bindex=0;
+    if(xordump[8*i]){
+      bindex=bindex+1;
+    }
+    if(xordump[8*i+1]){
+      bindex=bindex+2;
+    }
+    if(xordump[8*i+2]){
+      bindex=bindex+4;
+    }
+    if(xordump[8*i+3]){
+      bindex=bindex+8;
+    }
+    if(xordump[8*i+4]){
+      bindex=bindex+16;
+    }
+    if(xordump[8*i+5]){
+      bindex=bindex+32;
+    }
+    if(xordump[8*i+6]){
+      bindex=bindex+64;
+    }
+    if(xordump[8*i+7]){
+      bindex=bindex+128;
+    }
+    cout<<static_cast<char>(bindex);
+  }
   
   return 0;  
 }
@@ -144,17 +226,17 @@ int getPosNonZeroInt(){
 }
 
 void getBigStringFromInput(char* inpstring){
-  char bufferarray [201];
+  char bufferarray [12501];
   //Ensure Valid Input.
   bool acin;
-  for(int i=0;i<201;i++){
+  for(int i=0;i<12501;i++){
     inpstring[i]='\0';
   }
   int last=0;
   bool moreLines = true;
-  cout<<"200 characters or less, please."<<endl;
+  cout<<"12500 characters or less, please."<<endl;
   while(moreLines){
-    for(int i=0;i<201;i++){
+    for(int i=0;i<12501;i++){
       bufferarray[i]='\0';
     }
     acin=false;
@@ -176,32 +258,32 @@ void getBigStringFromInput(char* inpstring){
     
     if(moreLines){
       if(last!=0){
-        inpstring[getIndexOfLastNonNullChar(inpstring, 200)+1]='\n';
+        inpstring[getIndexOfLastNonNullChar(inpstring, 12500)+1]='\n';
 	last++;
       }
-      strncat(inpstring, bufferarray, 200-last);
-      last=getIndexOfLastNonNullChar(inpstring, 200);
+      strncat(inpstring, bufferarray, 12500-last);
+      last=getIndexOfLastNonNullChar(inpstring, 12500);
     }
-    if(last>=200){
-      inpstring[200]='\0';
+    if(last>=12500){
+      inpstring[12500]='\0';
       cout<<endl;
       return;
     }
   }
-  inpstring[200]='\0';
+  inpstring[12500]='\0';
   cout<<endl;
   return;
 }
 
 void getStringFromInput(char* inpstring){
-  char bufferarray [201];
+  char bufferarray [12501];
   //make sure it works
   bool acin=false;
-  for(int i=0;i<201;i++){
+  for(int i=0;i<12501;i++){
     bufferarray[i]='\0';
   }
   while(acin==false){
-    cout<<"200 characters or less, please."<<endl;
+    cout<<"12500 characters or less, please."<<endl;
     cin.getline(bufferarray, sizeof(bufferarray),'\n');
     //being robust.
     if(cin.fail()){
@@ -212,8 +294,8 @@ void getStringFromInput(char* inpstring){
       acin=true;
     }
   }
-  strncpy(inpstring, bufferarray, 200);
-  inpstring[200]='\0';
+  strncpy(inpstring, bufferarray, 12500);
+  inpstring[12500]='\0';
   cout<<endl;
   return;
 }
@@ -227,9 +309,25 @@ int getIndexOfLastNonNullChar(char* inpstring, int length){
   return -1;
 }
 
+void scrubNewlines(char* outstring, char* instring, int max){
+  bool checkmax=(max!=0);
+  bool negated=fase;
+  int offset = 0;
+  int i=0;
+  while (!negated){
+    if(instring[i+offset]=='\n'){
+      offset++;
+    }
+    outstring[i]=instring[i+offset];
+    if((instring[i+offset]=='\0')||(i+offset>=max)){
+      negated=true;
+    }
+  }
+}
+
 void ASCIIToBin(bool* bindump, bool big){
-  char* inpstring = new char[201];
-  for(int i=0; i<201; i++){
+  char* inpstring = new char[12501];
+  for(int i=0; i<12501; i++){
     inpstring[i]='\0';
   }
   cout<<"Please Insert ASCII Text."<<endl;
@@ -240,12 +338,12 @@ void ASCIIToBin(bool* bindump, bool big){
     getStringFromInput(inpstring);
   }
   cout<<"(IAMWHOIAM)";
-  for(int i=0; i<200; i++){
+  for(int i=0; i<12500; i++){
     cout<<inpstring[i];
   }
   cout<<endl;
   cout<<"(IAMWHOIAM)|";
-  for(int i=0; i<200; i++){
+  for(int i=0; i<12500; i++){
     cout<<int(inpstring[i])<<'|';
   }
   cout<<endl;
@@ -255,10 +353,10 @@ void ASCIIToBin(bool* bindump, bool big){
 }
 
 void ASCIIBinTranslate(bool* bindump, char* string){
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<100000; i++){
     bindump[i]=0;
   }
-  int lastindex = getIndexOfLastNonNullChar(string, 201);
+  int lastindex = getIndexOfLastNonNullChar(string, 12501);
   //perform ASCII-To-Bin
   for(int i=0; i<lastindex+1; i++){
     int intvalue = string[i];
@@ -294,34 +392,87 @@ void ASCIIBinTranslate(bool* bindump, char* string){
   }
 }
 
-
-void BinToHex(bool* bindump, char* hex){
-  //perform Bin-To-Hex
-  for(int i=0; i<401; i++){
-    hex[i]='\0';
+int Baseified(char becomeBase){
+  int sauce = becomeBase;
+  if(sauce==43){
+    return 62;
+  }else if(sauce==47){
+    return 63;
+  }else{
+    if((sauce<=57)&&(sauce>=48)){
+      return sauce+4;
+    }else if((sauce<=90)&&(sauce>=65)){
+      return sauce-65;
+    }else if((sauce<=122)&&(sauce>=97)){
+      return sauce-71;
+    }
   }
-  char hexchars[17] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f','\0'};
-  cout<<"(IAMWHOIAM)|";
-  for(int i=0; i<400; i++){
-    int bindex=0;
-    if(bindump[4*i+3]){
-      bindex=bindex+1;
-    }
-    if(bindump[4*i+2]){
-      bindex=bindex+2;
-    }
-    if(bindump[4*i+1]){
-      bindex=bindex+4;
-    }
-    if(bindump[4*i+0]){
-      bindex=bindex+8;
-    }
-    //cout<<"index: "<<bindex<<" Char: "<<hexchars[bindex]<<endl;
-    hex[i]=hexchars[bindex];
-    cout<<bindex<<'|';
+  return -1;
+}
+
+//*
+void BaseToBin(bool* bindump, bool big = false){
+  char* inpstring = new char[12501];
+  for(int i=0; i<12501; i++){
+    inpstring[i]='\0';
+  }
+  cout<<"Please Insert Base64 Text."<<endl;
+  //get text
+  if(big){
+    getBigStringFromInput(inpstring);
+  }else{
+    getStringFromInput(inpstring);
+  }
+  cout<<"(IAMWHOIAM)";
+  for(int i=0; i<12500; i++){
+    cout<<inpstring[i];
   }
   cout<<endl;
+  cout<<"(IAMWHOIAM)|";
+  for(int i=0; i<12500; i++){
+    cout<<int(inpstring[i])<<'|';
+  }
+  cout<<endl;
+  BaseBinTranslate(bindump, inpstring);
+  delete inpstring;
+  return;
 }
+
+void BaseBinTranslate(bool* bindump, char* stringy){
+  char* scrubbed = new char[12500];
+  scrubNewlines(scrubbed, stringy, 12500);
+  for(int i=0; i<100000; i++){
+    bindump[i]=0;
+  }
+  int lastindex = getIndexOfLastNonNullChar(scrubbed, 12501);
+  //perform Base-To-Bin
+  for(int i=0; i<lastindex+1; i++){
+    int intvalue = Baseified(scrubbed[i]);
+    if(intvalue>=32){
+      bindump [(8*i)+0] = 1;
+      intvalue-=32;
+    }
+    if(intvalue>=16){
+      bindump [(8*i)+1] = 1;
+      intvalue-=16;
+    }
+    if(intvalue>=8){
+      bindump [(8*i)+2] = 1;
+      intvalue-=8;
+    }
+    if(intvalue>=4){
+      bindump [(8*i)+3] = 1;
+      intvalue-=4;
+    }
+    if(intvalue>=2){
+      bindump [(8*i)+4] = 1;
+      intvalue-=2;
+    }
+    bindump [(8*i)+5] = intvalue;
+  }
+  delete scrubbed;
+}
+//*/
 
 //takes the expected frequency. Subtracts the true, then takes the abs value. divides by charcount to keep small-char values from dominating.
 double FreqCheck(char* sequence){
