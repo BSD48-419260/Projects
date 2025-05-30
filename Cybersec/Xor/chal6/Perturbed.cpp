@@ -28,7 +28,7 @@ int HammingDist(bool* one, bool* two, int max);
 bool* singXor(bool* box, int len);
 
 int main(){
-  int guesses = 5;
+  int guesses = 15;
   cout<<"Please insert guessed key length (probably between 2 and 40)."<<endl;
   int keysize = getPosNonZeroInt();
   
@@ -120,7 +120,7 @@ int main(){
     for(int i=0; i<numblocks; i++){
       for(int j=0; j<(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))); j++){
 	for(int l=0; l<8; l++){
-	  transposeBuffer[i][j*8+l]=bindump[8*(i+j*6)+l];
+	  transposeBuffer[i][j*8+l]=bindump[8*(i+j*numblocks)+l];
 	}
       }
     }
@@ -203,6 +203,7 @@ int main(){
       }
       cout<<static_cast<char>(bindex);
     }
+    cout<<endl;
     for(int i=0; i<numblocks; i++){
       delete[] transposeBuffer[i];
       delete[] keys[i];
