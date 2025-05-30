@@ -28,27 +28,32 @@ int HammingDist(bool* one, bool* two, int max);
 bool* singXor(bool* box, int len);
 
 int main(){
+  int guesses = 5;
   cout<<"Please insert guessed key length (probably between 2 and 40)."<<endl;
   int keysize = getPosNonZeroInt();
   
   //prepare bindump
   bool* bindump = new bool[100000];
-  ASCIIToBin(bindump);
+  BaseToBin(bindump, true);
+  cout<<"Begining processing..."<<endl;
   int last = lastOneInBools(bindump, 100000);
   last = (floor(last/8)+1)*8;
   cout<<"Last: "<<last<<endl;
+  /*
   for(int i=0; i<last; i++){
     cout<<bindump[i];
   }
   cout<<endl;
-
-  int* minDists = new int[4];
-  double* minEditVals = new double[4];
-  for(int i=0; i<4; i++){
+  //*/
+  cout<<"Beginning Estimation..."<<endl;
+  int* minDists = new int[guesses];
+  double* minEditVals = new double[guesses];
+  for(int i=0; i<guesses; i++){
     minDists[i]=0;
     minEditVals[i]=DBL_MAX;
   }
-  
+
+  //*
   bool* smallA =nullptr;
   bool* smallB =nullptr;
   bool* smallC =nullptr;
@@ -80,7 +85,7 @@ int main(){
     
     double normdist = (double(dist)/6)/i;
     int editmax=0;
-    for(int j=0; j<4; j++){
+    for(int j=0; j<guesses; j++){
       if(minEditVals[editmax]<minEditVals[j]){
 	editmax=j;
       }
@@ -96,110 +101,119 @@ int main(){
   delete[] smallB;
   delete[] smallC;
   delete[] smallD;
-  delete[] minDists;
-  delete[] minEditVals;
+  cout<<"Estimation Complete"<<endl;
+  //*/
   
-  int trumin = 0;
-  for(int i=0; i<4; i++){
+  for(int i=0; i<guesses; i++){
     cout<<"minDist: "<<minEditVals[i]<<", Val: "<<minDists[i]<<endl;
-    if(minEditVals[trumin]<minEditVals[i]){
-      trumin=i;
+  }
+  cout<<"Begining Decryptions..."<<endl;
+  for(int h=0; h<guesses; h++){
+    int numblocks=minDists[h]; //numblocks is estimated key length.
+    int numchars = floor((last/8)/numblocks)+1; // last/8 is the number of chars.
+    //numbchars is the max number of characters in every block. 
+    bool** transposeBuffer = new bool*[numblocks];
+    cout<<"Estimaed number of characters in key: "<<numblocks<<"Esimated number of characters per block:"<<numchars<<endl;
+    for(int i=0; i<numblocks; i++){
+      transposeBuffer[i] = new bool[(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks)))))*8];
     }
-  }
-  int numblocks=minDists[trumin]; //numblocks is estimated key length.
-  int numchars = floor((last/8)/numblocks)+1; // last/8 is the number of chars.
-  //numbchars is the max number of characters in every block. 
-  bool** transposeBuffer = new bool*[numblocks];
-  for(int i=0; i<numblocks; i++){
-    transposeBuffer[i] = new bool[(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks)))))*8];
-  }
-  for(int i=0; i<numblocks; i++){
-    for(int j=0; j<(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))); j++){
-      for(int l=0; l<8; l++){
-	transposeBuffer[i][j*8+l]=bindump[8*(i+j*6)+l];
+    for(int i=0; i<numblocks; i++){
+      for(int j=0; j<(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))); j++){
+	for(int l=0; l<8; l++){
+	  transposeBuffer[i][j*8+l]=bindump[8*(i+j*6)+l];
+	}
       }
     }
+    bool** keys = new bool*[numblocks];
+    for(int i=0; i<numblocks; i++){
+      keys[i] = singXor(transposeBuffer[i], (numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))));
+    }
+    cout<<"Keys found. Suspected key: "<<endl;
+    bool* xordump = new bool[100000];
+    //*
+    for(int i=0; i<numblocks; i++){
+      int bindex=0;
+      if(keys[i][0]){
+	bindex=bindex+1;
+      }
+      if(keys[i][1]){
+	bindex=bindex+2;
+      }
+      if(keys[i][2]){
+	bindex=bindex+4;
+      }
+      if(keys[i][3]){
+	bindex=bindex+8;
+      }
+      if(keys[i][4]){
+	bindex=bindex+16;
+      }
+      if(keys[i][5]){
+	bindex=bindex+32;
+      }
+      if(keys[i][6]){
+	bindex=bindex+64;
+      }
+      if(keys[i][7]){
+	bindex=bindex+128;
+      }
+      cout<<static_cast<char>(bindex);
+    }
+    //*/
+    cout<<endl<<'|';
+    for(int i=0; i<numblocks;i++){
+      for(int j=0; j<8; j++){
+	cout<<keys[i][j];
+      }
+      cout<<'|';
+    }
+    cout<<endl;
+    
+    for(int i=0; i<last; i++){
+      xordump[i]=(bindump[i]!=keys[int(floor(i/8))%numblocks][i%8]);
+      //cout<<xordump[i];
+    }
+    //cout<<endl;
+    cout<<"Suspected solution:"<<endl;
+    for(int i=0; i<last/8; i++){
+      int bindex=0;
+      if(xordump[8*i]){
+	bindex=bindex+1;
+      }
+      if(xordump[8*i+1]){
+	bindex=bindex+2;
+      }
+      if(xordump[8*i+2]){
+	bindex=bindex+4;
+      }
+      if(xordump[8*i+3]){
+	bindex=bindex+8;
+      }
+      if(xordump[8*i+4]){
+	bindex=bindex+16;
+      }
+      if(xordump[8*i+5]){
+	bindex=bindex+32;
+      }
+      if(xordump[8*i+6]){
+	bindex=bindex+64;
+      }
+      if(xordump[8*i+7]){
+	bindex=bindex+128;
+      }
+      cout<<static_cast<char>(bindex);
+    }
+    for(int i=0; i<numblocks; i++){
+      delete[] transposeBuffer[i];
+      delete[] keys[i];
+    }
+    delete[] transposeBuffer;
+    delete[] keys;
+    delete[] xordump;
   }
-  bool** keys = new bool*[numblocks];
-  for(int i=0; i<numblocks; i++){
-    keys[i] = singXor(transposeBuffer[i], (numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks))))));
-  }
-  cout<<"Keys found. Suspected key: "<<endl;
-  bool* xordump = new bool[100000];
-  //*
-  for(int i=0; i<numblocks; i++){
-    int bindex=0;
-    if(keys[i][0]){
-      bindex=bindex+1;
-    }
-    if(keys[i][1]){
-      bindex=bindex+2;
-    }
-    if(keys[i][2]){
-      bindex=bindex+4;
-    }
-    if(keys[i][3]){
-      bindex=bindex+8;
-    }
-    if(keys[i][4]){
-      bindex=bindex+16;
-    }
-    if(keys[i][5]){
-      bindex=bindex+32;
-    }
-    if(keys[i][6]){
-      bindex=bindex+64;
-    }
-    if(keys[i][7]){
-      bindex=bindex+128;
-    }
-    cout<<static_cast<char>(bindex);
-  }
-  //*/
-  cout<<endl<<'|';
-  for(int i=0; i<numblocks;i++){
-    for(int j=0; j<8; j++){
-      cout<<keys[i][j];
-    }
-    cout<<'|';
-  }
-  cout<<endl;
-
-  for(int i=0; i<last; i++){
-    xordump[i]=(numb[i]!=keys[floor(i/8)%numblocks][i%8]);
-    cout<<xordump[i];
-  }
-  cout<<endl;
-  cout<<"Suspected solution:"<<endl;
-  for(int i=0; i<last/8; i++){
-    int bindex=0;
-    if(xordump[8*i]){
-      bindex=bindex+1;
-    }
-    if(xordump[8*i+1]){
-      bindex=bindex+2;
-    }
-    if(xordump[8*i+2]){
-      bindex=bindex+4;
-    }
-    if(xordump[8*i+3]){
-      bindex=bindex+8;
-    }
-    if(xordump[8*i+4]){
-      bindex=bindex+16;
-    }
-    if(xordump[8*i+5]){
-      bindex=bindex+32;
-    }
-    if(xordump[8*i+6]){
-      bindex=bindex+64;
-    }
-    if(xordump[8*i+7]){
-      bindex=bindex+128;
-    }
-    cout<<static_cast<char>(bindex);
-  }
-  
+  delete[] minDists;
+  delete[] minEditVals;
+  cout<<"Decryptions Complete."<<endl;
   return 0;  
 }
 
@@ -310,11 +324,12 @@ int getIndexOfLastNonNullChar(char* inpstring, int length){
 }
 
 void scrubNewlines(char* outstring, char* instring, int max){
+  cout<<"Starting newlinescrubbing..."<<endl;
   bool checkmax=(max!=0);
   bool negated=false;
   int offset = 0;
   int i=0;
-  while (!negated){
+  while (negated==false){
     if(instring[i+offset]=='\n'){
       offset++;
     }
@@ -322,7 +337,9 @@ void scrubNewlines(char* outstring, char* instring, int max){
     if((instring[i+offset]=='\0')||(i+offset>=max)){
       negated=true;
     }
+    i++;
   }
+  cout<<"Scrubbing Complete."<<endl;
 }
 
 void ASCIIToBin(bool* bindump, bool big){
@@ -428,12 +445,16 @@ void BaseToBin(bool* bindump, bool big){
     cout<<inpstring[i];
   }
   cout<<endl;
+  /*
   cout<<"(IAMWHOIAM)|";
   for(int i=0; i<12500; i++){
     cout<<int(inpstring[i])<<'|';
   }
+  //*/
   cout<<endl;
+  cout<<"Beginning translation..."<<endl;
   BaseBinTranslate(bindump, inpstring);
+  cout<<"Translation complete."<<endl;
   delete inpstring;
   return;
 }
@@ -497,7 +518,7 @@ double FreqCheck(char* sequence){
       nulter=true;
     }
   }
-  cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
+  //cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
   if(charcount==0){
     return DBL_MAX;
   }
@@ -505,7 +526,7 @@ double FreqCheck(char* sequence){
   for(int g=0; g<26; g++){
     value+=(abs((freqs[g]*charcount)-counts[g])/charcount);
   }
-  delete counts;
+  delete[] counts;
   return value;
 }
 
@@ -555,13 +576,15 @@ bool* singXor(bool* box, int len){
   bool notdone=true;
   //actual translation setup
   while(notdone){
+    /*
     cout<<"Key: "<<g<<" ";
     for(int i=0; i<8; i++){
       cout<<key[i];
     }
     cout<<endl;
+    //*/
     for(int i=0; i<len; i++){
-      xordump[i]=(numb[i]!=key[i%8]);
+      xordump[i]=(box[i]!=key[i%8]);
     }
     for(int i=0; i<(len/8)+1; i++){
       sequence[i]='\0';
@@ -593,16 +616,18 @@ bool* singXor(bool* box, int len){
       if(xordump[8*i+7]){
 	bindex=bindex+128;
       }
-      if(bindex<=128){
+      //if(bindex<=128){
 	sequence[i]=static_cast<char>(bindex);
-      }else{
-	i=(len/8)+1;
-	isvalid=false;
-      }
+      //}else{
+      //  i=(len/8)+1;
+      //  isvalid=false;
+      //}
     }
     if(isvalid){
+      //cout<<"Salt Shakers."<<endl;
       double freqsec = FreqCheck(sequence);
       if(freqsec!=0){
+	//cout<<"Freqsec: "<<freqsec<<" Curval: "<<value<<endl;
 	if(freqsec<value){
 	  value = freqsec;
 	  keyAsInt = g;
@@ -619,6 +644,5 @@ bool* singXor(bool* box, int len){
   delete key;
   delete sequence;
   delete xordump;
-  
-  return keyAsInt;
+  return bestkey;
 }
