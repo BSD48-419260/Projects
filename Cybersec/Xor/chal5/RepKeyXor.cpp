@@ -15,21 +15,21 @@ int lastOneInBools(bool* numb, int length);
 
 int main(){
   //prepare bindump
-  bool* bindumpA = new bool[1600];  
-  bool* xordump = new bool[1600];
-  bool* key = new bool[1600];
+  bool* bindumpA = new bool[100000];  
+  bool* xordump = new bool[100000];
+  bool* key = new bool[100000];
   
   int g=0;
   //buffer that holds the output sequence
-  char* sequence = new char[401];
+  char* sequence = new char[25001];
   cout<<"String. ";
   ASCIIToBin(bindumpA, true);
 
-  int last = lastOneInBools(bindumpA, 1600);
+  int last = lastOneInBools(bindumpA, 100000);
   last = (floor(last/8)+1)*8;
   
   cout<<"Bindump:";
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<last; i++){
     if(i%75==0){
       cout<<endl;
     }
@@ -37,10 +37,10 @@ int main(){
   }
   cout<<endl;
 
-  makeKey(key, 1600);
+  makeKey(key, last);
 
   cout<<"Key:";
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<last; i++){
     if(i%75==0){
       cout<<endl;
     }
@@ -57,7 +57,7 @@ int main(){
   }
 
   cout<<"Xordump:";
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<last; i++){
     if(i%75==0){
       cout<<endl;
     }
@@ -65,7 +65,7 @@ int main(){
   }
   cout<<endl;
   
-  for(int i=0; i<401; i++){
+  for(int i=0; i<25001; i++){
     sequence[i]='\0';
   }
 
@@ -85,17 +85,17 @@ int main(){
 
 
 void getBigStringFromInput(char* inpstring){
-  char bufferarray [201];
+  char bufferarray [12501];
   //Ensure Valid Input.
   bool acin;
-  for(int i=0;i<201;i++){
+  for(int i=0;i<12501;i++){
     inpstring[i]='\0';
   }
   int last=0;
   bool moreLines = true;
-  cout<<"200 characters or less, please."<<endl;
+  cout<<"12500 characters or less, please."<<endl;
   while(moreLines){
-    for(int i=0;i<201;i++){
+    for(int i=0;i<12501;i++){
       bufferarray[i]='\0';
     }
     acin=false;
@@ -117,32 +117,32 @@ void getBigStringFromInput(char* inpstring){
     
     if(moreLines){
       if(last!=0){
-        inpstring[getIndexOfLastNonNullChar(inpstring, 200)+1]='\n';
+        inpstring[getIndexOfLastNonNullChar(inpstring, 12500)+1]='\n';
 	last++;
       }
-      strncat(inpstring, bufferarray, 200-last);
-      last=getIndexOfLastNonNullChar(inpstring, 200);
+      strncat(inpstring, bufferarray, 12500-last);
+      last=getIndexOfLastNonNullChar(inpstring, 12500);
     }
-    if(last>=200){
-      inpstring[200]='\0';
+    if(last>=12500){
+      inpstring[12500]='\0';
       cout<<endl;
       return;
     }
   }
-  inpstring[200]='\0';
+  inpstring[12500]='\0';
   cout<<endl;
   return;
 }
 
 void getStringFromInput(char* inpstring){
-  char bufferarray [201];
+  char bufferarray [12501];
   //make sure it works
   bool acin=false;
-  for(int i=0;i<201;i++){
+  for(int i=0;i<12501;i++){
     bufferarray[i]='\0';
   }
   while(acin==false){
-    cout<<"200 characters or less, please."<<endl;
+    cout<<"12500 characters or less, please."<<endl;
     cin.getline(bufferarray, sizeof(bufferarray),'\n');
     //being robust.
     if(cin.fail()){
@@ -153,8 +153,8 @@ void getStringFromInput(char* inpstring){
       acin=true;
     }
   }
-  strncpy(inpstring, bufferarray, 200);
-  inpstring[200]='\0';
+  strncpy(inpstring, bufferarray, 12500);
+  inpstring[12500]='\0';
   cout<<endl;
   return;
 }
@@ -169,8 +169,8 @@ int getIndexOfLastNonNullChar(char* inpstring, int length){
 }
 
 void ASCIIToBin(bool* bindump, bool big=false){
-  char* inpstring = new char[201];
-  for(int i=0; i<201; i++){
+  char* inpstring = new char[12501];
+  for(int i=0; i<12501; i++){
     inpstring[i]='\0';
   }
   cout<<"Please Insert ASCII Text."<<endl;
@@ -181,20 +181,22 @@ void ASCIIToBin(bool* bindump, bool big=false){
     getStringFromInput(inpstring);
   }
   cout<<"(IAMWHOIAM)";
-  for(int i=0; i<200; i++){
+  for(int i=0; i<12500; i++){
     cout<<inpstring[i];
   }
   cout<<endl;
+  /*
   cout<<"(IAMWHOIAM)|";
-  for(int i=0; i<200; i++){
+  for(int i=0; i<12500; i++){
     cout<<int(inpstring[i])<<'|';
   }
+  */
   cout<<endl;
   //prepare bindump
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<100000; i++){
     bindump[i]=0;
   }
-  int lastindex = getIndexOfLastNonNullChar(inpstring, 201);
+  int lastindex = getIndexOfLastNonNullChar(inpstring, 12501);
   //perform ASCII-To-Bin
   for(int i=0; i<lastindex+1; i++){
     int intvalue = inpstring[i];
@@ -235,12 +237,12 @@ void ASCIIToBin(bool* bindump, bool big=false){
 
 void BinToHex(bool* bindump, char* hex){
   //perform Bin-To-Hex
-  for(int i=0; i<401; i++){
+  for(int i=0; i<25001; i++){
     hex[i]='\0';
   }
   char hexchars[17] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f','\0'};
-  cout<<"(IAMWHOIAM)|";
-  for(int i=0; i<400; i++){
+  //cout<<"(IAMWHOIAM)|";
+  for(int i=0; i<25000; i++){
     int bindex=0;
     if(bindump[4*i+3]){
       bindex=bindex+1;
@@ -256,9 +258,9 @@ void BinToHex(bool* bindump, char* hex){
     }
     //cout<<"index: "<<bindex<<" Char: "<<hexchars[bindex]<<endl;
     hex[i]=hexchars[bindex];
-    cout<<bindex<<'|';
+    //cout<<bindex<<'|';
   }
-  cout<<endl;
+  //cout<<endl;
 }
 
 void makeKey(bool* key,int length){
@@ -266,7 +268,7 @@ void makeKey(bool* key,int length){
   ASCIIToBin(key);
   int last = lastOneInBools(key, length);
   last = (floor(last/8)+1)*8;
-  for(int i=0; i<1600; i++){
+  for(int i=0; i<100000; i++){
     key[i] = key[i%last];
   }
   return;

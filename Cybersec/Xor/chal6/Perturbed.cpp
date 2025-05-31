@@ -28,13 +28,14 @@ int HammingDist(bool* one, bool* two, int max);
 bool* singXor(bool* box, int len);
 
 int main(){
-  int guesses = 15;
+  int guesses = 1;
   cout<<"Please insert guessed key length (probably between 2 and 40)."<<endl;
   int keysize = getPosNonZeroInt();
   
   //prepare bindump
   bool* bindump = new bool[100000];
   BaseToBin(bindump, true);
+  cout"What?"<<endl;
   cout<<"Begining processing..."<<endl;
   int last = lastOneInBools(bindump, 100000);
   last = (floor(last/8)+1)*8;
@@ -113,7 +114,7 @@ int main(){
     int numchars = floor((last/8)/numblocks)+1; // last/8 is the number of chars.
     //numbchars is the max number of characters in every block. 
     bool** transposeBuffer = new bool*[numblocks];
-    cout<<"Estimaed number of characters in key: "<<numblocks<<"Esimated number of characters per block:"<<numchars<<endl;
+    cout<<"Estimaed number of characters in key: "<<numblocks<<" Esimated number of characters per block: "<<numchars<<endl;
     for(int i=0; i<numblocks; i++){
       transposeBuffer[i] = new bool[(numchars-(!(i<=((last/8)-((floor(double(last/8)/double(numblocks)))*numblocks)))))*8];
     }
@@ -370,14 +371,15 @@ void ASCIIToBin(bool* bindump, bool big){
   return;
 }
 
-void ASCIIBinTranslate(bool* bindump, char* string){
+void ASCIIBinTranslate(bool* bindump, char* stringy){
+  cout<<"Assault";
   for(int i=0; i<100000; i++){
     bindump[i]=0;
   }
-  int lastindex = getIndexOfLastNonNullChar(string, 12501);
+  int lastindex = getIndexOfLastNonNullChar(stringy, 12501);
   //perform ASCII-To-Bin
   for(int i=0; i<lastindex+1; i++){
-    int intvalue = string[i];
+    int intvalue = stringy[i];
     if(intvalue>=128){
       bindump [(8*i)+0] = 1;
       intvalue-=128;
@@ -408,6 +410,7 @@ void ASCIIBinTranslate(bool* bindump, char* string){
     }
     bindump [(8*i)+7] = intvalue;
   }
+  cout<<" Vehicle"<<endl;
 }
 
 int Baseified(char becomeBase){
@@ -496,37 +499,84 @@ void BaseBinTranslate(bool* bindump, char* stringy){
 }
 //*/
 
-//takes the expected frequency. Subtracts the true, then takes the abs value. divides by charcount to keep small-char values from dominating.
+//lower is better. that's the only rule.
 double FreqCheck(char* sequence){
   //part of expected frequency.
-  double freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
-  double* counts = new double[26];
-  for(int i=0; i<26; i++){
+  //double freqs[26] = {0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074};
+
+  //I got this list of frequencies from chatgpt when it occured to me that spaces would be useful. 
+  double englishFrequencies[27] = {
+    0.07234, // a
+    0.01321, // b
+    0.02462, // c
+    0.03763, // d
+    0.11241, // e
+    0.01971, // f
+    0.01783, // g
+    0.05394, // h
+    0.06165, // i
+    0.00135, // j
+    0.00683, // k
+    0.03562, // l
+    0.02129, // m
+    0.05973, // n
+    0.06645, // o
+    0.01707, // p
+    0.00084, // q
+    0.05299, // r
+    0.05598, // s
+    0.08006, // t
+    0.02440, // u
+    0.00866, // v
+    0.02088, // w
+    0.00133, // x
+    0.01747, // y
+    0.00065, // z
+    0.11504  // space
+  };
+  double* counts = new double[27];
+  for(int i=0; i<27; i++){
     counts[i]=0;
   }
   bool nulter = false;
   int i=0;
   double charcount=0;
+  double avgwordlength=0;
+  int numwords=0;
+  int lastwordlength=0;
   //getting observed frequency. will use charcount to calc expected frequency.
-  while(nulter==false){
-    if(sequence[i]!='\0'){
-      if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
-        counts[tolower(sequence[i])-97]++;
-        charcount+=1;
-      }
-      i++;
-    }else{
-      nulter=true;
-    }
+  while(sequence[i]!='\0'){
+    if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
+      counts[tolower(sequence[i])-97]++;
+      charcount+=1;
+      lastwordlength++;
+    }else if(sequence[i]==' '){
+      counts[26]++;
+      charcount+=1;
+
+      avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
+      numwords++;
+      lastwordlength=0;
+    }/*else{
+      avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
+      numwords++;
+      lastwordlength=0;
+      }*/
+    i++;
   }
+  avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
   //cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
-  if(charcount==0){
+  if((charcount==0)||((charcount/i)<0.5)){
     return DBL_MAX;
   }
   double value = 0;
-  for(int g=0; g<26; g++){
-    value+=(abs((freqs[g]*charcount)-counts[g])/charcount);
+  for(int g=0; g<27; g++){
+    //cout<<"Letter: "<<+static_cast<char>(g+65)<<" Freq: "<<englishFrequencies[g]<<" count: "<<counts[g]<<" expected: "<<(englishFrequencies[g]*charcount)<<endl;
+    value+=(pow((counts[g])-(englishFrequencies[g]*charcount),2)/(englishFrequencies[g]*charcount));
+    //value+=(abs((counts[g])-(englishFrequencies[g]*charcount))/charcount);
+    //value+=(pow((counts[g])-(englishFrequencies[g]*charcount),2)/(englishFrequencies[g]*charcount))/charcount;
   }
+  value=((value/10000)+(abs(avgwordlength-4.7)))/2;
   delete[] counts;
   return value;
 }
@@ -577,8 +627,8 @@ bool* singXor(bool* box, int len){
   bool notdone=true;
   //actual translation setup
   while(notdone){
-    /*
-    cout<<"Key: "<<g<<" ";
+    //*
+    cout<<"Key: "<<g<<" "<<static_cast<char>(g)<<" ";
     for(int i=0; i<8; i++){
       cout<<key[i];
     }
@@ -617,18 +667,18 @@ bool* singXor(bool* box, int len){
       if(xordump[8*i+7]){
 	bindex=bindex+128;
       }
-      //if(bindex<=128){
+      if(bindex<=128){
 	sequence[i]=static_cast<char>(bindex);
-      //}else{
-      //  i=(len/8)+1;
-      //  isvalid=false;
-      //}
+      }else{
+        i=(len/8)+1;
+        isvalid=false;
+      }
     }
-    if(isvalid){
+    if(true){
       //cout<<"Salt Shakers."<<endl;
       double freqsec = FreqCheck(sequence);
       if(freqsec!=0){
-	//cout<<"Freqsec: "<<freqsec<<" Curval: "<<value<<endl;
+	cout<<"Freqsec: "<<freqsec<<" Curval: "<<value<<endl;
 	if(freqsec<value){
 	  value = freqsec;
 	  keyAsInt = g;
@@ -637,6 +687,12 @@ bool* singXor(bool* box, int len){
 	  }
 	}
       }
+    }
+    if(isvalid){
+      for(int i=0; i<40; i++){
+	cout<<sequence[i];
+      }
+      cout<<endl;
     }
     boolIncrement(key,8);
     g++;
