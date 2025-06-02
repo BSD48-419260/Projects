@@ -1,9 +1,0 @@
-Hello Mr. Galbraith.
-
-I would like to begin by saying I tried.
-I am at my wits end, and I do not know what is going wrong
-I have spent hours working on this and at the time of writing this project is due in 5 hours, in which I do not think I will sucessfully find the answer to this project.
-for some dang reason, my decryption algorithim is just plain not working.
-I'm sorry, but I think I'm going to have to give up on this one.
-
-if anyone actually manged to get this one done can you send me a link to their code? I want to see what they did that I didn't.

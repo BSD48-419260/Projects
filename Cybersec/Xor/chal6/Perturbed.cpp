@@ -11,7 +11,7 @@ void getBigStringFromInput(char* inpstring);
 void getStringFromInput(char* inpstring);
 int getIndexOfLastNonNullChar(char* inpstring, int length);
 
-void scrubNewlines(char* outstring, char* instring, int max);
+void scrubPadding(char* outstring, char* instring, int max);
 
 void ASCIIToBin(bool* bindump, bool big = false);
 void ASCIIBinTranslate(bool* bindump, char* string);
@@ -35,7 +35,7 @@ int main(){
   //prepare bindump
   bool* bindump = new bool[100000];
   BaseToBin(bindump, true);
-  cout"What?"<<endl;
+  cout<<"What?"<<endl;
   cout<<"Begining processing..."<<endl;
   int last = lastOneInBools(bindump, 100000);
   last = (floor(last/8)+1)*8;
@@ -59,7 +59,7 @@ int main(){
   bool* smallB =nullptr;
   bool* smallC =nullptr;
   bool* smallD =nullptr;
-  for(int i=1; i<=min(keysize,last/32); i++){
+  for(int i=0; i<=min(keysize,last/32); i++){
     delete[] smallA;
     delete[] smallB;
     delete[] smallC;
@@ -135,28 +135,28 @@ int main(){
     for(int i=0; i<numblocks; i++){
       int bindex=0;
       if(keys[i][0]){
-	bindex=bindex+1;
+	bindex=bindex+128;
       }
       if(keys[i][1]){
-	bindex=bindex+2;
-      }
-      if(keys[i][2]){
-	bindex=bindex+4;
-      }
-      if(keys[i][3]){
-	bindex=bindex+8;
-      }
-      if(keys[i][4]){
-	bindex=bindex+16;
-      }
-      if(keys[i][5]){
-	bindex=bindex+32;
-      }
-      if(keys[i][6]){
 	bindex=bindex+64;
       }
+      if(keys[i][2]){
+	bindex=bindex+32;
+      }
+      if(keys[i][3]){
+	bindex=bindex+16;
+      }
+      if(keys[i][4]){
+	bindex=bindex+8;
+      }
+      if(keys[i][5]){
+	bindex=bindex+4;
+      }
+      if(keys[i][6]){
+	bindex=bindex+2;
+      }
       if(keys[i][7]){
-	bindex=bindex+128;
+	bindex=bindex+1;
       }
       cout<<static_cast<char>(bindex);
     }
@@ -169,38 +169,36 @@ int main(){
       cout<<'|';
     }
     cout<<endl;
-    
     for(int i=0; i<last; i++){
       xordump[i]=(bindump[i]!=keys[int(floor(i/8))%numblocks][i%8]);
-      //cout<<xordump[i];
     }
     //cout<<endl;
     cout<<"Suspected solution:"<<endl;
     for(int i=0; i<last/8; i++){
       int bindex=0;
       if(xordump[8*i]){
-	bindex=bindex+1;
+	bindex=bindex+128;
       }
       if(xordump[8*i+1]){
-	bindex=bindex+2;
-      }
-      if(xordump[8*i+2]){
-	bindex=bindex+4;
-      }
-      if(xordump[8*i+3]){
-	bindex=bindex+8;
-      }
-      if(xordump[8*i+4]){
-	bindex=bindex+16;
-      }
-      if(xordump[8*i+5]){
-	bindex=bindex+32;
-      }
-      if(xordump[8*i+6]){
 	bindex=bindex+64;
       }
+      if(xordump[8*i+2]){
+	bindex=bindex+32;
+      }
+      if(xordump[8*i+3]){
+	bindex=bindex+16;
+      }
+      if(xordump[8*i+4]){
+	bindex=bindex+8;
+      }
+      if(xordump[8*i+5]){
+	bindex=bindex+4;
+      }
+      if(xordump[8*i+6]){
+	bindex=bindex+2;
+      }
       if(xordump[8*i+7]){
-	bindex=bindex+128;
+	bindex=bindex+1;
       }
       cout<<static_cast<char>(bindex);
     }
@@ -325,14 +323,13 @@ int getIndexOfLastNonNullChar(char* inpstring, int length){
   return -1;
 }
 
-void scrubNewlines(char* outstring, char* instring, int max){
-  cout<<"Starting newlinescrubbing..."<<endl;
-  bool checkmax=(max!=0);
+void scrubPadding(char* outstring, char* instring, int max){
+  cout<<"Starting Padding Scrubbing..."<<endl;
   bool negated=false;
   int offset = 0;
   int i=0;
   while (negated==false){
-    if(instring[i+offset]=='\n'){
+    if((instring[i+offset]=='\n')||(instring[i+offset]=='=')||(instring[i+offset]==' ')){
       offset++;
     }
     outstring[i]=instring[i+offset];
@@ -459,43 +456,43 @@ void BaseToBin(bool* bindump, bool big){
   cout<<"Beginning translation..."<<endl;
   BaseBinTranslate(bindump, inpstring);
   cout<<"Translation complete."<<endl;
-  delete inpstring;
+  delete[] inpstring;
   return;
 }
 
 void BaseBinTranslate(bool* bindump, char* stringy){
   char* scrubbed = new char[12500];
-  scrubNewlines(scrubbed, stringy, 12500);
+  scrubPadding(scrubbed, stringy, 12500);
   for(int i=0; i<100000; i++){
     bindump[i]=0;
   }
   int lastindex = getIndexOfLastNonNullChar(scrubbed, 12501);
   //perform Base-To-Bin
   for(int i=0; i<lastindex+1; i++){
-    int intvalue = Baseified(scrubbed[i]);
+    int intvalue = Baseified(scrubbed[i]);    
     if(intvalue>=32){
-      bindump [(8*i)+0] = 1;
+      bindump [(6*i)+0] = 1;
       intvalue-=32;
     }
     if(intvalue>=16){
-      bindump [(8*i)+1] = 1;
+      bindump [(6*i)+1] = 1;
       intvalue-=16;
     }
     if(intvalue>=8){
-      bindump [(8*i)+2] = 1;
+      bindump [(6*i)+2] = 1;
       intvalue-=8;
     }
     if(intvalue>=4){
-      bindump [(8*i)+3] = 1;
+      bindump [(6*i)+3] = 1;
       intvalue-=4;
     }
     if(intvalue>=2){
-      bindump [(8*i)+4] = 1;
+      bindump [(6*i)+4] = 1;
       intvalue-=2;
     }
-    bindump [(8*i)+5] = intvalue;
+    bindump [(6*i)+5] = intvalue;
   }
-  delete scrubbed;
+  delete[] scrubbed;
 }
 //*/
 
@@ -540,43 +537,31 @@ double FreqCheck(char* sequence){
   }
   bool nulter = false;
   int i=0;
-  double charcount=0;
-  double avgwordlength=0;
-  int numwords=0;
-  int lastwordlength=0;
+  int charcount=0;
   //getting observed frequency. will use charcount to calc expected frequency.
   while(sequence[i]!='\0'){
     if(((tolower(sequence[i])-97)>=0)&&((tolower(sequence[i])-97)<=25)){
       counts[tolower(sequence[i])-97]++;
-      charcount+=1;
-      lastwordlength++;
+      charcount++;
     }else if(sequence[i]==' '){
       counts[26]++;
-      charcount+=1;
-
-      avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
-      numwords++;
-      lastwordlength=0;
-    }/*else{
-      avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
-      numwords++;
-      lastwordlength=0;
-      }*/
+      charcount++;
+    }
     i++;
   }
-  avgwordlength=((avgwordlength*numwords)+lastwordlength)/(double(numwords+1));
   //cout<<"I HATE YOU EBEZEER SCROOOGE YOU INCORRIGIBLE PIECE OF: "<<charcount<<endl;
-  if((charcount==0)||((charcount/i)<0.5)){
+  if((charcount==0)/*||((charcount/i)<0.5)*/){
+    delete[] counts;
     return DBL_MAX;
   }
+  
   double value = 0;
   for(int g=0; g<27; g++){
     //cout<<"Letter: "<<+static_cast<char>(g+65)<<" Freq: "<<englishFrequencies[g]<<" count: "<<counts[g]<<" expected: "<<(englishFrequencies[g]*charcount)<<endl;
-    value+=(pow((counts[g])-(englishFrequencies[g]*charcount),2)/(englishFrequencies[g]*charcount));
-    //value+=(abs((counts[g])-(englishFrequencies[g]*charcount))/charcount);
+    //value+=(pow((counts[g])-(englishFrequencies[g]*charcount),2)/(englishFrequencies[g]*charcount));
+    value+=(abs((counts[g])-(englishFrequencies[g]*double(charcount)))/charcount);
     //value+=(pow((counts[g])-(englishFrequencies[g]*charcount),2)/(englishFrequencies[g]*charcount))/charcount;
   }
-  value=((value/10000)+(abs(avgwordlength-4.7)))/2;
   delete[] counts;
   return value;
 }
@@ -627,7 +612,7 @@ bool* singXor(bool* box, int len){
   bool notdone=true;
   //actual translation setup
   while(notdone){
-    //*
+    /*
     cout<<"Key: "<<g<<" "<<static_cast<char>(g)<<" ";
     for(int i=0; i<8; i++){
       cout<<key[i];
@@ -644,28 +629,28 @@ bool* singXor(bool* box, int len){
     for(int i=0; i<(len/8); i++){
       int bindex=0;
       if(xordump[8*i]){
-	bindex=bindex+1;
+	bindex=bindex+128;
       }
       if(xordump[8*i+1]){
-	bindex=bindex+2;
-      }
-      if(xordump[8*i+2]){
-	bindex=bindex+4;
-      }
-      if(xordump[8*i+3]){
-	bindex=bindex+8;
-      }
-      if(xordump[8*i+4]){
-	bindex=bindex+16;
-      }
-      if(xordump[8*i+5]){
-	bindex=bindex+32;
-      }
-      if(xordump[8*i+6]){
 	bindex=bindex+64;
       }
+      if(xordump[8*i+2]){
+	bindex=bindex+32;
+      }
+      if(xordump[8*i+3]){
+	bindex=bindex+16;
+      }
+      if(xordump[8*i+4]){
+	bindex=bindex+8;
+      }
+      if(xordump[8*i+5]){
+	bindex=bindex+4;
+      }
+      if(xordump[8*i+6]){
+	bindex=bindex+2;
+      }
       if(xordump[8*i+7]){
-	bindex=bindex+128;
+	bindex=bindex+1;
       }
       if(bindex<=128){
 	sequence[i]=static_cast<char>(bindex);
@@ -678,7 +663,13 @@ bool* singXor(bool* box, int len){
       //cout<<"Salt Shakers."<<endl;
       double freqsec = FreqCheck(sequence);
       if(freqsec!=0){
-	cout<<"Freqsec: "<<freqsec<<" Curval: "<<value<<endl;
+	/*
+	cout<<"Key: "<<g<<" "<<static_cast<char>(g)<<" ";
+	for(int i=0; i<8; i++){
+	  cout<<key[i];
+	}
+	cout<<" Freqsec: "<<freqsec<<" Curval: "<<value<<endl;
+	//*/
 	if(freqsec<value){
 	  value = freqsec;
 	  keyAsInt = g;
@@ -687,12 +678,6 @@ bool* singXor(bool* box, int len){
 	  }
 	}
       }
-    }
-    if(isvalid){
-      for(int i=0; i<40; i++){
-	cout<<sequence[i];
-      }
-      cout<<endl;
     }
     boolIncrement(key,8);
     g++;
