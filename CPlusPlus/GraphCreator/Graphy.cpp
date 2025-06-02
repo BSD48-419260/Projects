@@ -601,13 +601,24 @@ void Dijkstra(node** box, node* origin, node* target){
   int originIndex = getIndex(origin, box);
   int targetIndex = getIndex(target, box);
   dist[originIndex]=0;
+  bool progress = true;
   while(!explored[targetIndex]){
+    if(progress==false){
+      cout<<"Looks like there isn't any path between the two."<<endl;
+      delete[] dist;
+      delete[] shortestPrev;
+      delete[] explored;
+      return;
+    }
+    progress=!progress;
     int lowestIndex = -1;
+    /*
     for(int i=0; i<20; i++){
       if(box[i]!=nullptr){
-	//cout<<"Cell: "<<i<<", Name: "<<box[i]->getName()<<", Explored: "<<explored[i]<<", Dist: "<<dist[i]<<", shorestPrev: "<<shortestPrev[i]<<endl;
+	cout<<"Cell: "<<i<<", Name: "<<box[i]->getName()<<", Explored: "<<explored[i]<<", Dist: "<<dist[i]<<", shorestPrev: "<<shortestPrev[i]<<endl;
       }
     }
+    */
     for(int i=0; i<20; i++){
       if(box[i]!=nullptr){
 	//cout<<i<<", "<<box[i]->getName()<<". "<<(dist[i]<dist[lowestIndex])<<" AND "<<(dist[i]!=-1)<<" AND "<<(explored[i]==false)<<endl;
@@ -621,9 +632,11 @@ void Dijkstra(node** box, node* origin, node* target){
       }
     }
     //cout<<"LowestIndex: "<<lowestIndex<<endl;
-    if(explored[lowestIndex]==true){
-      //cout<<"Error! No path found."<<endl;
-      explored[targetIndex]=true;
+    if(lowestIndex==-1){
+      cout<<"Error! No path found."<<endl;
+      delete[] dist;
+      delete[] shortestPrev;
+      delete[] explored;
     }
     explored[lowestIndex]=true;
     if(lowestIndex==targetIndex){
@@ -633,6 +646,7 @@ void Dijkstra(node** box, node* origin, node* target){
     }else{
       //cout<<"NumberOfCons: "<<box[lowestIndex]->getNumberOfConnections()<<endl;
       for(int i=0; i<box[lowestIndex]->getNumberOfConnections();i++){
+	progress=true;
 	int conIndex = getIndex(box[lowestIndex]->getConnections()[i],box);
 	//cout<<"LowIndex"<<lowestIndex<<", "<<box[lowestIndex]->getName()<<"ConIndex: "<<conIndex<<", "<<box[conIndex]->getName()<<endl;
 	if((dist[conIndex]==-1)||(dist[lowestIndex]+box[lowestIndex]->getConnectionValues()[i] < dist[conIndex])){
